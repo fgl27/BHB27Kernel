@@ -1613,6 +1613,14 @@ static void module_remove_modinfo_attrs(struct module *mod)
 	kfree(mod->modinfo_attrs);
 }
 
+static void mod_kobject_put(struct module *mod)
+{
+	DECLARE_COMPLETION_ONSTACK(c);
+	mod->mkobj.kobj_completion = &c;
+	kobject_put(&mod->mkobj.kobj);
+	wait_for_completion(&c);
+}
+
 static int mod_sysfs_init(struct module *mod)
 {
 	int err;
@@ -1640,7 +1648,7 @@ static int mod_sysfs_init(struct module *mod)
 	err = kobject_init_and_add(&mod->mkobj.kobj, &module_ktype, NULL,
 				   "%s", mod->name);
 	if (err)
-		kobject_put(&mod->mkobj.kobj);
+		mod_kobject_put(mod);
 
 	/* delay uevent until full sysfs population */
 out:
@@ -1684,7 +1692,7 @@ out_unreg_param:
 out_unreg_holders:
 	kobject_put(mod->holders_dir);
 out_unreg:
-	kobject_put(&mod->mkobj.kobj);
+	mod_kobject_put(mod);
 out:
 	return err;
 }
@@ -1693,7 +1701,7 @@ static void mod_sysfs_fini(struct module *mod)
 {
 	remove_notes_attrs(mod);
 	remove_sect_attrs(mod);
-	kobject_put(&mod->mkobj.kobj);
+	mod_kobject_put(mod);
 }
 
 #else /* !CONFIG_SYSFS */
