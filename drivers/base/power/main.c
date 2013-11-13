@@ -1336,6 +1336,9 @@ static int device_prepare(struct device *dev, pm_message_t state)
 
 	device_unlock(dev);
 
+	if (error)
+		pm_runtime_put(dev);
+
 	return error;
 }
 
