@@ -691,7 +691,7 @@ static int __init vmcore_init(void)
 		proc_vmcore->size = vmcore_size;
 	return 0;
 }
-module_init(vmcore_init)
+fs_initcall(vmcore_init);
 
 /* Cleanup function for vmcore module. */
 void vmcore_cleanup(void)
