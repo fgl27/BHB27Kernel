@@ -78,8 +78,7 @@
 #include <linux/hardirq.h>
 #include <linux/spinlock.h>
 #include <linux/types.h>
-
-#include "zsmalloc.h"
+#include <linux/zsmalloc.h>
 
 /*
  * This must be power of 2 and greater than of equal to sizeof(link_free).
@@ -206,6 +205,7 @@ struct link_free {
 struct zs_pool {
 	struct size_class size_class[ZS_SIZE_CLASSES];
 
+	struct zs_ops *ops;
 	gfp_t flags;	/* allocation flags used when growing pool */
 };
 
@@ -224,7 +224,7 @@ struct zs_pool {
  * performs VM mapping faster than copying, then it should be added here
  * so that USE_PGTABLE_MAPPING is defined. This causes zsmalloc to use
  * page table mapping rather than copying for object mapping.
- */
+*/
 #if defined(CONFIG_ARM) && !defined(MODULE)
 #define USE_PGTABLE_MAPPING
 #endif
@@ -239,6 +239,21 @@ struct mapping_area {
 	enum zs_mapmode vm_mm; /* mapping mode */
 };
 
+/* default page alloc/free ops */
+struct page *zs_alloc_page(gfp_t flags)
+{
+	return alloc_page(flags);
+}
+
+void zs_free_page(struct page *page)
+{
+	__free_page(page);
+}
+
+struct zs_ops zs_default_ops = {
+	.alloc = zs_alloc_page,
+	.free = zs_free_page
+};
 
 /* per-cpu VM mapping areas for zspage accesses that cross page boundaries */
 static DEFINE_PER_CPU(struct mapping_area, zs_map_area);
@@ -423,19 +438,14 @@ static struct page *get_next_page(struct page *page)
 	if (is_last_page(page))
 		next = NULL;
 	else if (is_first_page(page))
-		next = (struct page *)page_private(page);
+		next = (struct page *)page->private;
 	else
 		next = list_entry(page->lru.next, struct page, lru);
 
 	return next;
 }
 
-/*
- * Encode <page, obj_idx> as a single handle value.
- * On hardware platforms with physical memory starting at 0x0 the pfn
- * could be 0 so we ensure that the handle will never be 0 by adjusting the
- * encoded obj_idx value before encoding.
- */
+/* Encode <page, obj_idx> as a single handle value */
 static void *obj_location_to_handle(struct page *page, unsigned long obj_idx)
 {
 	unsigned long handle;
@@ -446,21 +456,17 @@ static void *obj_location_to_handle(struct page *page, unsigned long obj_idx)
 	}
 
 	handle = page_to_pfn(page) << OBJ_INDEX_BITS;
-	handle |= ((obj_idx + 1) & OBJ_INDEX_MASK);
+	handle |= (obj_idx & OBJ_INDEX_MASK);
 
 	return (void *)handle;
 }
 
-/*
- * Decode <page, obj_idx> pair from the given object handle. We adjust the
- * decoded obj_idx back to its original value since it was adjusted in
- * obj_location_to_handle().
- */
+/* Decode <page, obj_idx> pair from the given object handle */
 static void obj_handle_to_location(unsigned long handle, struct page **page,
 				unsigned long *obj_idx)
 {
 	*page = pfn_to_page(handle >> OBJ_INDEX_BITS);
-	*obj_idx = (handle & OBJ_INDEX_MASK) - 1;
+	*obj_idx = handle & OBJ_INDEX_MASK;
 }
 
 static unsigned long obj_idx_to_offset(struct page *page,
@@ -484,7 +490,7 @@ static void reset_page(struct page *page)
 	page_mapcount_reset(page);
 }
 
-static void free_zspage(struct page *first_page)
+static void free_zspage(struct zs_ops *ops, struct page *first_page)
 {
 	struct page *nextp, *tmp, *head_extra;
 
@@ -494,7 +500,7 @@ static void free_zspage(struct page *first_page)
 	head_extra = (struct page *)page_private(first_page);
 
 	reset_page(first_page);
-	__free_page(first_page);
+	ops->free(first_page);
 
 	/* zspage with only 1 system page */
 	if (!head_extra)
@@ -503,10 +509,10 @@ static void free_zspage(struct page *first_page)
 	list_for_each_entry_safe(nextp, tmp, &head_extra->lru, lru) {
 		list_del(&nextp->lru);
 		reset_page(nextp);
-		__free_page(nextp);
+		ops->free(nextp);
 	}
 	reset_page(head_extra);
-	__free_page(head_extra);
+	ops->free(nextp);
 }
 
 /* Initialize a newly allocated zspage */
@@ -558,7 +564,8 @@ static void init_zspage(struct page *first_page, struct size_class *class)
 /*
  * Allocate a zspage for the given size class
  */
-static struct page *alloc_zspage(struct size_class *class, gfp_t flags)
+static struct page *alloc_zspage(struct zs_ops *ops, struct size_class *class,
+				gfp_t flags)
 {
 	int i, error;
 	struct page *first_page = NULL, *uninitialized_var(prev_page);
@@ -578,7 +585,7 @@ static struct page *alloc_zspage(struct size_class *class, gfp_t flags)
 	for (i = 0; i < class->pages_per_zspage; i++) {
 		struct page *page;
 
-		page = alloc_page(flags);
+		page = ops->alloc(flags);
 		if (!page)
 			goto cleanup;
 
@@ -590,7 +597,7 @@ static struct page *alloc_zspage(struct size_class *class, gfp_t flags)
 			first_page->inuse = 0;
 		}
 		if (i == 1)
-			set_page_private(first_page, (unsigned long)page);
+			first_page->private = (unsigned long)page;
 		if (i >= 1)
 			page->first_page = first_page;
 		if (i >= 2)
@@ -610,7 +617,7 @@ static struct page *alloc_zspage(struct size_class *class, gfp_t flags)
 
 cleanup:
 	if (unlikely(error) && first_page) {
-		free_zspage(first_page);
+		free_zspage(ops, first_page);
 		first_page = NULL;
 	}
 
@@ -804,6 +811,7 @@ fail:
 /**
  * zs_create_pool - Creates an allocation pool to work from.
  * @flags: allocation flags used to allocate pool metadata
+ * @ops: allocation/free callbacks for expanding the pool
  *
  * This function must be called before anything when using
  * the zsmalloc allocator.
@@ -811,7 +819,7 @@ fail:
  * On success, a pointer to the newly created pool is returned,
  * otherwise NULL.
  */
-struct zs_pool *zs_create_pool(gfp_t flags)
+struct zs_pool *zs_create_pool(gfp_t flags, struct zs_ops *ops)
 {
 	int i, ovhd_size;
 	struct zs_pool *pool;
@@ -837,6 +845,10 @@ struct zs_pool *zs_create_pool(gfp_t flags)
 
 	}
 
+	if (ops)
+		pool->ops = ops;
+	else
+		pool->ops = &zs_default_ops;
 	pool->flags = flags;
 
 	return pool;
@@ -853,7 +865,8 @@ void zs_destroy_pool(struct zs_pool *pool)
 
 		for (fg = 0; fg < _ZS_NR_FULLNESS_GROUPS; fg++) {
 			if (class->fullness_list[fg]) {
-				pr_info("Freeing non-empty class with size %db, fullness group %d\n",
+				pr_info("Freeing non-empty class with size "
+					"%db, fullness group %d\n",
 					class->size, fg);
 			}
 		}
@@ -871,7 +884,7 @@ EXPORT_SYMBOL_GPL(zs_destroy_pool);
  * otherwise 0.
  * Allocation requests with size > ZS_MAX_ALLOC_SIZE will fail.
  */
-unsigned long zs_malloc(struct zs_pool *pool, size_t size)
+unsigned long zs_malloc(struct zs_pool *pool, size_t size, gfp_t flags)
 {
 	unsigned long obj;
 	struct link_free *link;
@@ -893,7 +906,7 @@ unsigned long zs_malloc(struct zs_pool *pool, size_t size)
 
 	if (!first_page) {
 		spin_unlock(&class->lock);
-		first_page = alloc_zspage(class, pool->flags);
+		first_page = alloc_zspage(pool->ops, class, flags);
 		if (unlikely(!first_page))
 			return 0;
 
@@ -959,7 +972,7 @@ void zs_free(struct zs_pool *pool, unsigned long obj)
 	spin_unlock(&class->lock);
 
 	if (fullness == ZS_EMPTY)
-		free_zspage(first_page);
+		free_zspage(pool->ops, first_page);
 }
 EXPORT_SYMBOL_GPL(zs_free);
 
@@ -976,7 +989,7 @@ EXPORT_SYMBOL_GPL(zs_free);
  * against nested mappings.
  *
  * This function returns with preemption and page faults disabled.
- */
+*/
 void *zs_map_object(struct zs_pool *pool, unsigned long handle,
 			enum zs_mapmode mm)
 {
