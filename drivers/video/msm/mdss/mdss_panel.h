@@ -367,6 +367,7 @@ struct mdss_panel_info {
 	bool is_split_display;
 
 	uint32_t panel_dead;
+	u32 panel_orientation;
 
 	struct mdss_mdp_pp_tear_check te;
 
