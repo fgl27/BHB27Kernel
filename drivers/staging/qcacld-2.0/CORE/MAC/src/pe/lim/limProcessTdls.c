@@ -2697,11 +2697,10 @@ tSirRetStatus limProcessSmeTdlsMgmtSendReq(tpAniSirGlobal pMac,
     }
 
     /* check if we are in proper state to work as TDLS client */
-    if (psessionEntry->limSystemRole != eLIM_STA_ROLE)
-    {
+    if (!LIM_IS_STA_ROLE(psessionEntry)) {
         VOS_TRACE(VOS_MODULE_ID_PE, VOS_TRACE_LEVEL_ERROR,
                 "send mgmt received in wrong system Role %d",
-                psessionEntry->limSystemRole);
+                GET_LIM_SYSTEM_ROLE(psessionEntry));
         goto lim_tdls_send_mgmt_error;
     }
 
@@ -2901,11 +2900,10 @@ tSirRetStatus limProcessSmeTdlsAddStaReq(tpAniSirGlobal pMac,
     }
 
     /* check if we are in proper state to work as TDLS client */
-    if (psessionEntry->limSystemRole != eLIM_STA_ROLE)
-    {
+    if (!LIM_IS_STA_ROLE(psessionEntry)) {
         VOS_TRACE(VOS_MODULE_ID_PE, VOS_TRACE_LEVEL_ERROR,
-                         "send mgmt received in wrong system Role %d",
-                                             psessionEntry->limSystemRole);
+                  "send mgmt received in wrong system Role %d",
+                  GET_LIM_SYSTEM_ROLE(psessionEntry));
         goto lim_tdls_add_sta_error;
     }
 
@@ -2965,11 +2963,10 @@ tSirRetStatus limProcessSmeTdlsDelStaReq(tpAniSirGlobal pMac,
     }
 
     /* check if we are in proper state to work as TDLS client */
-    if (psessionEntry->limSystemRole != eLIM_STA_ROLE)
-    {
+    if (!LIM_IS_STA_ROLE(psessionEntry)) {
         VOS_TRACE(VOS_MODULE_ID_PE, VOS_TRACE_LEVEL_ERROR,
                 "Del sta received in wrong system Role %d",
-                psessionEntry->limSystemRole);
+                GET_LIM_SYSTEM_ROLE(psessionEntry));
         goto lim_tdls_del_sta_error;
     }
 
@@ -3071,11 +3068,11 @@ tSirRetStatus limProcesSmeTdlsLinkEstablishReq(tpAniSirGlobal pMac,
     }
 
     /* check if we are in proper state to work as TDLS client */
-    if (psessionEntry->limSystemRole != eLIM_STA_ROLE)
+    if (!LIM_IS_STA_ROLE(psessionEntry))
     {
         VOS_TRACE(VOS_MODULE_ID_PE, VOS_TRACE_LEVEL_ERROR,
                 "TDLS Link Establish Request received in wrong system Role %d",
-                psessionEntry->limSystemRole);
+                GET_LIM_SYSTEM_ROLE(psessionEntry));
         goto lim_tdls_link_establish_error;
     }
 
