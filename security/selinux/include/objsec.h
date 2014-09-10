@@ -24,6 +24,7 @@
 #include <linux/binfmts.h>
 #include <linux/in.h>
 #include <linux/spinlock.h>
+#include <net/net_namespace.h>
 #include "flask.h"
 #include "avc.h"
 #include <net/net_namespace.h>
