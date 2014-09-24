@@ -44,6 +44,7 @@
 #include <linux/delay.h>
 #include <linux/swap.h>
 #include <linux/fs.h>
+#include <linux/show_mem_notifier.h>
 
 #include <trace/events/memkill.h>
 
@@ -439,6 +440,11 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 			     minfree * (long)(PAGE_SIZE / 1024),
 			     min_score_adj,
 			     other_free * (long)(PAGE_SIZE / 1024));
+
+		if (lowmem_debug_level >= 2 && selected_oom_score_adj == 0) {
+			show_mem_call_notifiers();
+		}
+
 		lowmem_deathpending_timeout = jiffies + HZ;
 
 		/* Due to MotoCare parser can't handle unfixed column,
