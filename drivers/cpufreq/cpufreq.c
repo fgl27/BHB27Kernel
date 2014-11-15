@@ -1717,6 +1717,10 @@ int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list)
 		ret = blocking_notifier_chain_register(
 				&cpufreq_policy_notifier_list, nb);
 		break;
+	case CPUFREQ_GOVINFO_NOTIFIER:
+		ret = atomic_notifier_chain_register(
+				&cpufreq_govinfo_notifier_list, nb);
+		break;
 	default:
 		ret = -EINVAL;
 	}
