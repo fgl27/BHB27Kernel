@@ -1070,6 +1070,9 @@ config TOUCHSCREEN_TOUCHX
           To compile this driver as a module, choose M here: the
           module will be called touchx.
 
+config WAKE_GESTURES
+        bool "Wake Gestures"
+
 source "drivers/input/touchscreen/gt9xx/Kconfig"
 
 endif
