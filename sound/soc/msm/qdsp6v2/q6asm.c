@@ -1307,6 +1307,7 @@ static int32_t q6asm_callback(struct apr_client_data *data, void *priv)
 	}
 
 	if (data->opcode == RESET_EVENTS) {
+		mutex_lock(&ac->cmd_lock);
 		if (ac->apr == NULL)
 			ac->apr = ac->apr2;
 		pr_debug("q6asm_callback: Reset event is received: %d %d apr[%pK]\n",
@@ -1316,6 +1317,7 @@ static int32_t q6asm_callback(struct apr_client_data *data, void *priv)
 					(uint32_t *)data->payload, ac->priv);
 		apr_reset(ac->apr);
 		ac->apr = NULL;
+		mutex_unlock(&ac->cmd_lock);
 		return 0;
 	}
 
@@ -1664,12 +1666,13 @@ static void __q6asm_add_hdr(struct audio_client *ac, struct apr_hdr *hdr,
 {
 	pr_debug("%s:pkt_size=%d cmd_flg=%d session=%d stream_id=%d\n",
 		 __func__, pkt_size, cmd_flg, ac->session, stream_id);
+	mutex_lock(&ac->cmd_lock);
 	if (ac->apr == NULL) {
 		pr_err("%s: ac->apr is NULL", __func__);
+		mutex_unlock(&ac->cmd_lock);
 		return;
 	}
 
-	mutex_lock(&ac->cmd_lock);
 	hdr->hdr_field = APR_HDR_FIELD(APR_MSG_TYPE_SEQ_CMD, \
 				APR_HDR_LEN(sizeof(struct apr_hdr)),\
 				APR_PKT_VER);
