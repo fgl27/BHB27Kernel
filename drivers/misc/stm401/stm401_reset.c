@@ -97,6 +97,7 @@ int stm401_reset_and_init(void)
 	int err = 0, ret_err = 0;
 	int reset_attempts = 0;
 	unsigned char *rst_cmdbuff = kmalloc(512, GFP_KERNEL);
+	unsigned char readbuff[3];
 	int mutex_locked = 0;
 
 	dev_dbg(&stm401_misc_data->client->dev, "stm401_reset_and_init\n");
@@ -124,8 +125,11 @@ int stm401_reset_and_init(void)
 
 		/* check for sign of life */
 		rst_cmdbuff[0] = REV_ID;
-		err = stm401_i2c_write_read_no_reset(stm401_misc_data,
-			rst_cmdbuff, 1, 1);
+		err = stm401_i2c_write_read_no_reset(
+			stm401_misc_data,
+			rst_cmdbuff,
+			readbuff,
+			1, 1);
 		if (err < 0)
 			dev_err(&stm401_misc_data->client->dev, "stm401 not responding after reset (%d)",
 				reset_attempts);
