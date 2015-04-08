@@ -1276,18 +1276,22 @@ static int32_t q6asm_callback(struct apr_client_data *data, void *priv)
 	int32_t  ret = 0;
 
 
-	if ((ac == NULL) || (data == NULL)) {
-		pr_err("ac or priv NULL\n");
+	if (ac == NULL) {
+		pr_err("%s: ac NULL\n", __func__);
+		return -EINVAL;
+	}
+	if (data == NULL) {
+		pr_err("%s: data NULL\n", __func__);
 		return -EINVAL;
 	}
 	if (!q6asm_is_valid_audio_client(ac)) {
-		pr_err("%s: audio client pointer is invalid, ac = %p\n",
+		pr_err("%s: audio client pointer is invalid, ac = %pK\n",
 				__func__, ac);
 		return -EINVAL;
 	}
 
 	if (ac->session <= 0 || ac->session > 8) {
-		pr_err("%s:Session ID is invalid, session = %d\n", __func__,
+		pr_err("%s: Session ID is invalid, session = %d\n", __func__,
 			ac->session);
 		return -EINVAL;
 	}
