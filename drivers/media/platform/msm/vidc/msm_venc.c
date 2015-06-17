@@ -981,6 +981,7 @@ static int msm_venc_queue_setup(struct vb2_queue *q,
 	rc = msm_comm_try_state(inst, MSM_VIDC_OPEN_DONE);
 	if (rc) {
 		dprintk(VIDC_ERR, "Failed to open instance\n");
+		msm_comm_session_clean(inst);
 		return rc;
 	}
 
@@ -2448,6 +2449,7 @@ static int msm_venc_op_s_ctrl(struct v4l2_ctrl *ctrl)
 	if (rc) {
 		dprintk(VIDC_ERR,
 			"Failed to move inst: %pK to start done state\n", inst);
+		msm_comm_session_clean(inst);
 		goto failed_open_done;
 	}
 
