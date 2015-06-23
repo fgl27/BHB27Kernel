@@ -5039,8 +5039,8 @@
 			uv-to-ua-numerator = <2>;
 			uv-to-ua-denominator = <1>;
 			vph-channel = <0x07>;
-			vph-high-threshold-uv = <3600000>;
-			vph-low-threshold-uv = <3200000>;
+			vph-high-threshold-uv = <3800000>;
+			vph-low-threshold-uv = <3150000>;
 			thermal-handle = <&msm_thermal_freq>;
 			smb135x-handle = <&smb1357_otg_vreg>;
 		};
