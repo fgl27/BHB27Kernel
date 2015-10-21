@@ -38,7 +38,7 @@ struct usb_diag_ch *get_tty_ch(struct tty_struct *tty)
 {
 	int found = 0;
 	unsigned long flags;
-	struct usb_diag_ch *ch;
+	struct usb_diag_ch *ch = NULL;
 
 	spin_lock_irqsave(&diag_tty_lock, flags);
 	if (!strncmp(tty->name, "ttydiag0",

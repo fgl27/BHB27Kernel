@@ -1636,7 +1636,7 @@ static void msm_ufs_phy_calibrate(struct ufs_hba *hba)
 	struct msm_ufs_host *host = hba->priv;
 	struct msm_ufs_phy *phy = host->phy;
 	struct msm_ufs_phy_calibration *tbl;
-	int tbl_size;
+	int tbl_size = 0;
 	int i;
 	u8 major;
 	u16 minor, step;

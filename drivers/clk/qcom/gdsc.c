@@ -70,7 +70,7 @@ static int gdsc_enable(struct regulator_dev *rdev)
 	uint32_t regval;
 	int i, ret;
 	void __iomem *gx_domain_misc_io_map;
-	u32 gx_domain_misc_val;
+	u32 gx_domain_misc_val = 0;
 
 	if (sc->toggle_logic) {
 		regval = readl_relaxed(sc->gdscr);

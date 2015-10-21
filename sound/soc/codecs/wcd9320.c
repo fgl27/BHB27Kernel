@@ -1107,8 +1107,10 @@ static int taiko_set_micbias3(struct snd_kcontrol *kcontrol,
 				DAPM_MICBIAS3_EXTERNAL);
 			w = NULL;
 		}
-		if ((w != NULL) && w->power)
+		if ((w != NULL) && w->power) {
+			rc = 0;
 			goto out;
+		}
 
 		rc = snd_soc_dapm_disable_pin(&codec->dapm,
 			DAPM_MICBIAS3_EXTERNAL_STANDALONE);

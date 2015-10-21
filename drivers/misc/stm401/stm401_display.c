@@ -155,7 +155,7 @@ int stm401_display_handle_quickpeek_locked(struct stm401_data *ps_stm401,
 	int ret = 0;
 	u8 aod_qp_reason;
 	u8 aod_qp_panel_state;
-	struct stm401_quickpeek_message *qp_message;
+	struct stm401_quickpeek_message *qp_message = NULL;
 
 	dev_dbg(&ps_stm401->client->dev, "%s\n", __func__);
 
