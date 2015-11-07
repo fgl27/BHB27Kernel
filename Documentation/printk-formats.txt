@@ -71,6 +71,7 @@ DMA addresses types dma_addr_t:
 	regardless of the width of the CPU data path. Passed by reference.
 
 Raw buffer as a hex string:
+
 	%*ph	00 01 02  ...  3f
 	%*phC	00:01:02: ... :3f
 	%*phD	00-01-02- ... -3f
@@ -144,6 +145,7 @@ UUID/GUID addresses:
 	order with lower case hex characters will be printed.
 
 dentry names:
+
 	%pd{,2,3,4}
 	%pD{,2,3,4}
 
@@ -163,6 +165,8 @@ struct va_format:
 		const char *fmt;
 		va_list *va;
 	};
+
+	Implements a "recursive vsnprintf".
 
 	Do not use this feature without some mechanism to verify the
 	correctness of the format string and va_list arguments.
@@ -193,6 +197,31 @@ struct clk:
 	(Common Clock Framework) or address (legacy clock framework) of the
 	structure; '%pCr' prints the current clock rate.
  	Passed by reference.
+
+Network device features:
+
+	%pNF	0x000000000000c000
+
+	For printing netdev_features_t.
+
+	Passed by reference.
+
+Command from struct task_struct
+
+	%pT	ls
+
+	For printing executable name excluding path from struct
+	task_struct.
+
+	Passed by reference.
+
+Ignored argument:
+
+	%n	%n
+
+	The argument passed will be ignored.  In other words, literal "%n" will
+	be in the output and the argument will be considered for next format
+	specifier.
 
 Thank you for your cooperation and attention.
 
