@@ -1674,7 +1674,7 @@ tSirRetStatus
 populate_dot11f_rates_tdls(tpAniSirGlobal p_mac,
 			   tDot11fIESuppRates *p_supp_rates,
                            tDot11fIEExtSuppRates *p_ext_supp_rates,
-                           tANI_U8 curr_oper_channel)
+                           uint8_t curr_oper_channel)
 {
 	tSirMacRateSet temp_rateset;
 	tSirMacRateSet temp_rateset2;
