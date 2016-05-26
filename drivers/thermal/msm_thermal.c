@@ -1118,6 +1118,10 @@ static void __ref do_core_control(long temp)
 			if (ret)
 				pr_err("Error %d online core %d\n",
 						ret, i);
+			else {
+				struct device *cpu_device = get_cpu_device(i);
+				kobject_uevent(&cpu_device->kobj, KOBJ_ONLINE);
+			}
 			break;
 		}
 	}
