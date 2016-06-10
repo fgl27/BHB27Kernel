@@ -20,7 +20,6 @@
 #include <linux/slab.h>
 #include <linux/cpufreq.h>
 #include <linux/fb.h>
-#include <linux/notifier.h>
 #include <linux/mutex.h>
 #include <linux/input.h>
 #include <linux/math64.h>
@@ -29,8 +28,8 @@
 
 #define MSM_HOTPLUG			"msm_hotplug"
 #define HOTPLUG_ENABLED			0
-#define DEFAULT_UPDATE_RATE		HZ / 10
-#define START_DELAY			HZ * 20
+#define DEFAULT_UPDATE_RATE		100
+#define START_DELAY			20000
 #define MIN_INPUT_INTERVAL		150 * 1000L
 #define DEFAULT_HISTORY_SIZE		10
 #define DEFAULT_DOWN_LOCK_DUR		1000
@@ -475,9 +474,6 @@ static void msm_hotplug_suspend(struct work_struct *work)
 {
 	int cpu;
 
-	if (!hotplug.msm_enabled)
-		return;
-
 	mutex_lock(&hotplug.msm_hotplug_mutex);
 	hotplug.suspended = 1;
 	hotplug.min_cpus_online_res = hotplug.min_cpus_online;
@@ -505,9 +501,6 @@ static void msm_hotplug_suspend(struct work_struct *work)
 static void __ref msm_hotplug_resume(struct work_struct *work)
 {
 	int cpu, required_reschedule = 0, required_wakeup = 0;
-
-	if (!hotplug.msm_enabled)
-		return;
 
 	if (hotplug.suspended) {
 		mutex_lock(&hotplug.msm_hotplug_mutex);
@@ -540,6 +533,9 @@ static void __ref msm_hotplug_resume(struct work_struct *work)
 
 static void __msm_hotplug_suspend(void)
 {
+	if (!hotplug.msm_enabled || hotplug.suspended)
+		return;
+
 	INIT_DELAYED_WORK(&hotplug.suspend_work, msm_hotplug_suspend);
 	queue_delayed_work_on(0, susp_wq, &hotplug.suspend_work, 
 				 msecs_to_jiffies(hotplug.suspend_defer_time * 1000)); 
@@ -547,6 +543,9 @@ static void __msm_hotplug_suspend(void)
 
 static void __msm_hotplug_resume(void)
 {
+	if (!hotplug.msm_enabled)
+		return;
+
 	flush_workqueue(susp_wq);
 	cancel_delayed_work_sync(&hotplug.suspend_work);
 	queue_work_on(0, susp_wq, &hotplug.resume_work);
@@ -693,6 +692,11 @@ static int __ref msm_hotplug_start(void)
 	}
 
 	hotplug.notif.notifier_call = fb_notifier_callback;
+	if (fb_register_client(&hotplug.notif)) {
+		pr_err("%s: Failed to register FB notifier callback\n",
+			MSM_HOTPLUG);
+		goto err_dev;
+	}
 
 	ret = input_register_handler(&hotplug_input_handler);
 	if (ret) {
@@ -730,7 +734,7 @@ static int __ref msm_hotplug_start(void)
 	}
 
 	queue_delayed_work_on(0, hotplug_wq, &hotplug_work,
-			      START_DELAY);
+			      msecs_to_jiffies(START_DELAY));
 
 	return ret;
 err_dev:
@@ -761,6 +765,7 @@ static void msm_hotplug_stop(void)
 	mutex_destroy(&stats.stats_mutex);
 	kfree(stats.load_hist);
 
+	fb_unregister_client(&hotplug.notif);
 	hotplug.notif.notifier_call = NULL;
 	input_unregister_handler(&hotplug_input_handler);
 
