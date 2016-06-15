@@ -94,7 +94,7 @@ struct mdss_mdp_data *mdss_mdp_wb_debug_buffer(struct msm_fb_data_type *mfd)
 		ihdl = ion_alloc(iclient, img_size, SZ_4K,
 				 ION_HEAP(ION_SF_HEAP_ID), 0);
 		if (IS_ERR_OR_NULL(ihdl)) {
-			pr_err("unable to alloc fbmem from ion (%p)\n", ihdl);
+			pr_err("unable to alloc fbmem from ion (%pK)\n", ihdl);
 			return NULL;
 		}
 
@@ -111,7 +111,7 @@ struct mdss_mdp_data *mdss_mdp_wb_debug_buffer(struct msm_fb_data_type *mfd)
 					   0, 0);
 		} else {
 			if (MDSS_LPAE_CHECK(mdss_wb_mem)) {
-				pr_err("Can't use phys mem %pa>4Gb w/o IOMMU\n",
+				pr_err("Can't use phys mem %pKa>4Gb w/o IOMMU\n",
 					&mdss_wb_mem);
 				ion_free(iclient, ihdl);
 				return NULL;
@@ -121,7 +121,7 @@ struct mdss_mdp_data *mdss_mdp_wb_debug_buffer(struct msm_fb_data_type *mfd)
 			img->len = img_size;
 		}
 
-		pr_debug("ihdl=%p virt=%p phys=0x%pa iova=0x%pa size=%u\n",
+		pr_debug("ihdl=%pK virt=%pK phys=0x%pKa iova=0x%pKa size=%u\n",
 			 ihdl, videomemory, &mdss_wb_mem, &img->addr, img_size);
 	}
 	return &mdss_wb_buffer;
@@ -373,7 +373,7 @@ static struct mdss_mdp_wb_data *get_local_node(struct mdss_mdp_wb *wb,
 	if (!list_empty(&wb->register_queue)) {
 		list_for_each_entry(node, &wb->register_queue, registered_entry)
 		if (node->buf_info.iova == data->iova) {
-			pr_debug("found node iova=%pa addr=%pa\n",
+			pr_debug("found node iova=%pKa addr=%pKa\n",
 				 &data->iova, &node->buf_data.p[0].addr);
 			return node;
 		}
@@ -399,7 +399,7 @@ static struct mdss_mdp_wb_data *get_local_node(struct mdss_mdp_wb *wb,
 		return NULL;
 	}
 
-	pr_debug("register node iova=0x%pa addr=0x%pa\n", &data->iova,
+	pr_debug("register node iova=0x%pKa addr=0x%pKa\n", &data->iova,
 								&buf->addr);
 
 	return node;
@@ -419,7 +419,7 @@ static struct mdss_mdp_wb_data *get_user_node(struct msm_fb_data_type *mfd,
 		list_for_each_entry(node, &wb->register_queue, registered_entry)
 			if ((node->buf_info.memory_id == data->memory_id) &&
 				    (node->buf_info.offset == data->offset)) {
-				pr_debug("found node fd=%x off=%x addr=%pa\n",
+				pr_debug("found node fd=%x off=%x addr=%pKa\n",
 						data->memory_id, data->offset,
 						&node->buf_data.p[0].addr);
 				return node;
@@ -467,7 +467,7 @@ static struct mdss_mdp_wb_data *get_user_node(struct msm_fb_data_type *mfd,
 	}
 
 	buf = &node->buf_data.p[0];
-	pr_debug("register node mem_id=%d offset=%u addr=0x%pa len=%lu\n",
+	pr_debug("register node mem_id=%d offset=%u addr=0x%pKa len=%lu\n",
 		 data->memory_id, data->offset, &buf->addr, buf->len);
 
 	return node;
@@ -484,7 +484,7 @@ static void mdss_mdp_wb_free_node(struct mdss_mdp_wb_data *node)
 
 	if (node->user_alloc) {
 		buf = &node->buf_data.p[0];
-		pr_debug("free user node mem_id=%d offset=%u addr=0x%pa\n",
+		pr_debug("free user node mem_id=%d offset=%u addr=0x%pKa\n",
 				node->buf_info.memory_id,
 				node->buf_info.offset,
 				&buf->addr);
@@ -522,16 +522,16 @@ static int mdss_mdp_wb_queue(struct msm_fb_data_type *mfd,
 
 		switch (node->state) {
 		case IN_FREE_QUEUE:
-			pr_err("node 0x%pa was already queueued before\n",
+			pr_err("node 0x%pKa was already queueued before\n",
 					&buf->addr);
 			ret = -EINVAL;
 			break;
 		case IN_BUSY_QUEUE:
-			pr_err("node 0x%pa still in busy state\n", &buf->addr);
+			pr_err("node 0x%pKa still in busy state\n", &buf->addr);
 			ret = -EBUSY;
 			break;
 		case WB_BUFFER_READY:
-			pr_debug("node 0x%pa re-queueded without dequeue\n",
+			pr_debug("node 0x%pKa re-queueded without dequeue\n",
 				&buf->addr);
 			list_del(&node->active_entry);
 		case WITH_CLIENT:
@@ -540,7 +540,7 @@ static int mdss_mdp_wb_queue(struct msm_fb_data_type *mfd,
 			node->state = IN_FREE_QUEUE;
 			break;
 		default:
-			pr_err("Invalid node 0x%pa state %d\n",
+			pr_err("Invalid node 0x%pKa state %d\n",
 				&buf->addr, node->state);
 			ret = -EINVAL;
 			break;
@@ -594,7 +594,7 @@ static int mdss_mdp_wb_dequeue(struct msm_fb_data_type *mfd,
 		memcpy(data, &node->buf_info, sizeof(*data));
 
 		buf = &node->buf_data.p[0];
-		pr_debug("found node addr=%pa len=%lu\n", &buf->addr, buf->len);
+		pr_debug("found node addr=%pKa len=%lu\n", &buf->addr, buf->len);
 	} else {
 		pr_debug("node is NULL, wait for next\n");
 		ret = -ENOBUFS;
