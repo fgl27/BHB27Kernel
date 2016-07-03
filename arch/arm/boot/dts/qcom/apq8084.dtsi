@@ -38,7 +38,8 @@
 			reg = <0x0>;
 			// The currents(uA) correspond to the frequencies in the
 			// frequency table.
-			current = < 71000 //300000 kHz
+			current = < 64000 //268800 kHz underclock
+			            71000 //300000 kHz
 			            83000 //422400 kHz
 			            97000 //652800 kHz
 			            106000 //729600 kHz
@@ -55,7 +56,11 @@
 			            405000 //2457600 kHz
 			            405000 //2496000 kHz
 			            413000 //2572800 kHz
-			            414000>; //2649600 kHz
+			            414000 //2649600 kHz
+			            420000 //2688000 kHz overclock
+			            432000 //2764800 kHz
+			            444000 //2841600 kHz
+			            450000>; //2880000 kHz
 		};
 
 		CPU1: cpu@1 {
@@ -64,7 +69,8 @@
 			reg = <0x1>;
 			// The currents(uA) correspond to the frequencies in the
 			// frequency table.
-			current = < 40470 //300000 kHz
+			current = < 36260 //268800 kHz underclock
+			            40470 //300000 kHz
 			            47309 //422400 kHz
 			            55289 //652800 kHz
 			            60419 //729600 kHz
@@ -81,7 +87,11 @@
 			            230849 //2457600 kHz
 			            230849 //2496000 kHz
 			            235409 //2572800 kHz
-			            235979>; //2649600 kHz
+			            414000 //2649600 kHz
+			            420000 //2688000 kHz overclock
+			            432000 //2764800 kHz
+			            444000 //2841600 kHz
+			            450000>; //2880000 kHz
 		};
 
 		CPU2: cpu@2 {
@@ -90,7 +100,8 @@
 			reg = <0x2>;
 			// The currents(uA) correspond to the frequencies in the
 			// frequency table.
-			current = < 46860 //300000 kHz
+			current = < 41980 //268800 kHz underclock
+			            46860 //300000 kHz
 			            54780 //422400 kHz
 			            64020 //652800 kHz
 			            69960 //729600 kHz
@@ -107,7 +118,11 @@
 			            267300 //2457600 kHz
 			            267300 //2496000 kHz
 			            272580 //2572800 kHz
-			            273240>; //2649600 kHz
+			            414000 //2649600 kHz
+			            420000 //2688000 kHz overclock
+			            432000 //2764800 kHz
+			            444000 //2841600 kHz
+			            450000>; //2880000 kHz
 		};
 
 		CPU3: cpu@3 {
@@ -116,7 +131,8 @@
 			reg = <0x3>;
 			// The currents(uA) correspond to the frequencies in the
 			// frequency table.
-			current = < 53960 //300000 kHz
+			current = < 48340 //268800 kHz underclock
+			            53960 //300000 kHz
 			            63080 //422400 kHz
 			            73720 //652800 kHz
 			            80560 //729600 kHz
@@ -133,7 +149,11 @@
 			            307800 //2457600 kHz
 			            307800 //2496000 kHz
 			            313880 //2572800 kHz
-			            314640>; //2649600 kHz
+			            414000 //2649600 kHz
+			            420000 //2688000 kHz overclock
+			            432000 //2764800 kHz
+			            444000 //2841600 kHz
+			            450000>; //2880000 kHz
 		};
 	};
 	memory {
