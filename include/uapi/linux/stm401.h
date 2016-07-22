@@ -19,7 +19,9 @@
 #ifndef __STM401_H__
 #define __STM401_H__
 
+#ifdef __KERNEL__
 #include <mach/mmi_hall_notifier.h>
+#endif
 
 /** The following define the IOCTL command values via the ioctl macros */
 #define STM401_IOCTL_BASE		77
