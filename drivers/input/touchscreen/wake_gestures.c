@@ -445,7 +445,7 @@ static void s2w_input_callback(struct work_struct *unused)
 static void dt2w_input_callback(struct work_struct *unused)
 {
 
-	if (scr_suspended() && (s2w_switch > 0 || camera_switch) && dt2w_switch)
+	if (scr_suspended() && dt2w_switch)
 		detect_doubletap2wake(touch_x, touch_y, true);
 	return;
 }
@@ -579,12 +579,6 @@ static ssize_t sweep2wake_dump(struct device *dev,
 	sscanf(buf, "%d ", &s2w_switch_temp);
 	if (s2w_switch_temp < 0 || s2w_switch_temp > 15)
 		s2w_switch_temp = 0;
-		
-	if (!s2w_switch_temp && !camera_switch)
-		set_internal_dt(dt2w_switch);
-	else {
-		set_internal_dt(false);
-	}
 
 	if (!scr_suspended())
 		s2w_switch = s2w_switch_temp;
@@ -637,9 +631,6 @@ static ssize_t doubletap2wake_dump(struct device *dev,
 
 	dt2w_switch = (input) ? true : false;		
 	
-	if ((!s2w_switch || !s2w_switch_temp) && (!camera_switch || !camera_switch_temp))
-		set_internal_dt(dt2w_switch);
-
 	return count;
 }
 
@@ -662,11 +653,6 @@ static ssize_t camera_gesture_dump(struct device *dev,
 	sscanf(buf, "%d ", &camera_switch_temp);
 	if (camera_switch_temp < 0 || camera_switch_temp > 1)
 		camera_switch_temp = 0;
-
-	if (!camera_switch_temp && !s2w_switch)
-		set_internal_dt(dt2w_switch);
-	else
-		set_internal_dt(false);
 
 	if (!scr_suspended())
 		camera_switch = camera_switch_temp;

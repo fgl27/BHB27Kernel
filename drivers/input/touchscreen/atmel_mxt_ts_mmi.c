@@ -2620,18 +2620,6 @@ bool scr_suspended(void)
 	return atomic_read(&data->suspended);
 }
 
-void set_internal_dt(bool input)
-{
-	struct mxt_data *mxt_data = gl_mxt_data;
-
-	if (input) {
-		mxt_set_alternate_mode(mxt_data,
-			mxt_data->alternate_mode, true, true);
-	} else {
-		mxt_restore_default_mode(mxt_data);
-	}
-}
-
 bool get_internal_dt(void)
 {
 	struct mxt_data *mxt_data = gl_mxt_data;
@@ -5096,7 +5084,7 @@ static int mxt_suspend(struct device *dev)
 		mxt_lock(&data->crit_section_lock);
 
 #ifdef CONFIG_WAKE_GESTURES
-		if (s2w_switch)
+		if (s2w_switch || camera_switch || dt2w_switch)
 			mxt_set_sensor_state(data, STATE_WG);
 		else
 #endif
