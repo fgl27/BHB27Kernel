@@ -351,12 +351,13 @@ CC		= $(srctree)/scripts/gcc-wrapper.py $(REAL_CC)
 
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
-CFLAGS_MODULE   =
-AFLAGS_MODULE   =
-LDFLAGS_MODULE  =
-CFLAGS_KERNEL	=
-AFLAGS_KERNEL	=
-CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
+MODFLAGS	= -pipe -DNDEBUG -std=gnu89 --param l1-cache-size=16 \
+		  --param l1-cache-line-size=16 --param l2-cache-size=2048
+CFLAGS_MODULE   = -DMODULE $(MODFLAGS)
+AFLAGS_MODULE   = -DMODULE $(MODFLAGS)
+LDFLAGS_MODULE  = --strip-debug
+CFLAGS_KERNEL	= $(MODFLAGS)
+AFLAGS_KERNEL	= $(MODFLAGS)
 
 
 # Use USERINCLUDE when you must reference the UAPI directories only.
@@ -383,8 +384,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
-		   -std=gnu89
-
+		   $(MODFLAGS)
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
