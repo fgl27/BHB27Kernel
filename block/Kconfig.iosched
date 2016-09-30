@@ -82,6 +82,10 @@ config CGROUP_BFQIO
 	  filesystem interface.  The name of the subsystem will be
 	  bfqio.
 
+config IOSCHED_MAPLE
+ 	tristate "Maple I/O scheduler"
+ 	default y
+
 choice
 	prompt "Default I/O scheduler"
 	default DEFAULT_CFQ
