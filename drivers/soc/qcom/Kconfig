@@ -121,5 +121,5 @@ config MAXIMUM_CURRENT_THROTTLING
 	  credit/upper limit in the CPU registers.
 
 source "drivers/soc/qcom/memshare/Kconfig"
-
+source "drivers/soc/qcom/hotplug/Kconfig"
 endif # ARCH_MSM

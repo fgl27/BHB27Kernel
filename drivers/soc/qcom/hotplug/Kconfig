@@ -1,0 +1,8 @@
+if ARCH_MSM
+
+config BLU_PLUG
+ 	bool "Dynamic hotplug driver"
+ 	depends on HOTPLUG_CPU
+ 	help
+	  The Dynamic hotplug driver automatically online/offline CPUs proportional to system load.
+
