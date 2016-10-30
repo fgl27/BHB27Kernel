@@ -19,6 +19,10 @@
 #define KGSL_3D0_SHADER_MEMORY	"kgsl_3d0_shader_memory"
 #define KGSL_3D0_IRQ		"kgsl_3d0_irq"
 
+#ifdef CONFIG_CPU_FREQ_GOV_IMPULSE
+extern int gfx_level;
+#endif
+
 #ifdef CONFIG_CPU_FREQ_GOV_KRAKEN
 extern int graphics_boost;
 #endif
