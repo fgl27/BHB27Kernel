@@ -196,6 +196,10 @@ void kgsl_pwrctrl_pwrlevel_change(struct kgsl_device *device,
         gfx_level = pwr->active_pwrlevel;
 #endif
 
+#ifdef CONFIG_CPU_FREQ_GOV_IMPULSE
+        gfx_level = pwr->active_pwrlevel;
+#endif
+
 #ifdef CONFIG_CPU_FREQ_GOV_KRAKEN
         graphics_boost = pwr->active_pwrlevel;
 #endif
