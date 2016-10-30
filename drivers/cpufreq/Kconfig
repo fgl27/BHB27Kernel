@@ -114,6 +114,61 @@ config CPU_FREQ_DEFAULT_GOV_KRAKEN
 	help
 	Use the CPUfreq governor 'kraken' as default.
 
+config CPU_FREQ_DEFAULT_GOV_ZZMOOVE
+	bool "zzmoove"
+	select CPU_FREQ_GOV_ZZMOOVE
+	help
+	Use the CPUFreq governor 'zzmoove' as default.
+
+config CPU_FREQ_DEFAULT_GOV_YANKACTIVE
+ 	   bool "yankactive"
+  	   select CPU_FREQ_GOV_YANKACTIVE
+	   help
+	   Use the CPUFreq governor 'yankactive' as default. This allows
+	   you to get a full dynamic cpu frequency capable system by simply
+	   loading your cpufreq low-level hardware driver, using the
+	   'yankactive' governor for latency-sensitive workloads.
+
+config CPU_FREQ_DEFAULT_GOV_IMPULSE
+	bool "impulse"
+	select CPU_FREQ_GOV_IMPULSE
+	help
+	  Use the CPUFreq governor 'impulse' as default. This allows
+	  you to get a full dynamic cpu frequency capable system by simply
+	  loading your cpufreq low-level hardware driver, using the
+	  'impulse' governor for latency-sensitive workloads.
+
+config CPU_FREQ_DEFAULT_GOV_UMBRELLA_CORE
+	bool "umbrella_core"
+	select CPU_FREQ_GOV_UMBRELLA_CORE
+	help
+	  Use the CPUFreq governor 'umbrella_core' as default. This allows
+	  you to get a full dynamic cpu frequency capable system by simply
+	  loading your cpufreq low-level hardware driver, using the
+	  'umbrella_core' governor for latency-sensitive workloads.
+
+config CPU_FREQ_DEFAULT_GOV_ONDEMAND_EPS
+	bool "ondemand_eps"
+	select CPU_FREQ_GOV_ONDEMAND_EPS
+
+config CPU_FREQ_DEFAULT_GOV_CHILL
+	bool "chill"
+	select CPU_FREQ_GOV_CHILL
+	select CPU_FREQ_GOV_INTERACTIVE
+	help
+	  Use the CPUFreq governor 'chill' as default. This allows
+	  you to get a full dynamic frequency capable system by simply
+	  loading your cpufreq low-level hardware driver.
+	  Be aware that not all cpufreq drivers support the conservative
+	  governor. If unsure have a look at the help section of the
+	  driver. Fallback governor will be the interactive governor.
+
+config CPU_FREQ_DEFAULT_GOV_BIOSHOCK
+	bool "BioShock"
+	select CPU_FREQ_GOV_BIOSHOCK
+	help
+	  Default governor of BioShock kernel
+
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -215,6 +270,55 @@ config CPU_FREQ_GOV_CONSERVATIVE
 config CPU_FREQ_GOV_KRAKEN
 	tristate "kraken' cpufreq governor"
  	depends on CPU_FREQ
+
+config CPU_FREQ_GOV_BIOSHOCK
+	tristate "'bioshock' cpufreq bioshock"
+	depends on CPU_FREQ
+	help
+	  'bioshock' - More aggressive version of conservative
+
+config CPU_FREQ_GOV_ZZMOOVE
+	   tristate "'zzmoove' cpufreq governor"
+	   depends on CPU_FREQ
+
+config CPU_FREQ_GOV_IMPULSE
+	tristate "'interactive' cpufreq policy governor"
+	help
+	  'impulse' - This driver adds a dynamic cpufreq policy governor
+	  designed for latency-sensitive workloads.
+
+	  If in doubt, say N.
+
+config CPU_FREQ_GOV_UMBRELLA_CORE
+	tristate "'umbrella_core' cpufreq policy governor"
+	help
+	  'umbrella_core' - This driver adds a dynamic cpufreq policy governor
+	  designed for latency-sensitive workloads.
+
+	  The governor is based on interactive to provide a resident controller
+	  which interprets unnecessary battery drain as evil.
+
+config CPU_FREQ_GOV_YANKACTIVE
+	  tristate "'yankactive' cpufreq policy governor"
+	  help
+	  'yankactive' - This driver adds a dynamic cpufreq policy governor
+	  designed for latency-sensitive workloads.
+	  The governor is based on interactive with just different default settings
+	  and can be achieved using interactive with a script. This is added for
+	  simplification purposes for myself.
+
+config CPU_FREQ_GOV_ONDEMAND_EPS
+        tristate "'ondemand_eps' cpufreq governor"
+        depends on CPU_FREQ
+
+config CPU_FREQ_GOV_CHILL
+	tristate "'chill' cpufreq governor"
+	depends on CPU_FREQ
+	select CPU_FREQ_GOV_COMMON
+	default y
+	help
+	  'chill' - similar to 'conservative', but optimized for devices
+	  that go into suspended or display off states often.
 
 config CPU_BOOST
 	tristate "Event base short term CPU freq boost"
