@@ -6,3 +6,4 @@ config BLU_PLUG
  	help
 	  The Dynamic hotplug driver automatically online/offline CPUs proportional to system load.
 
+endif # ARCH_MSM 
