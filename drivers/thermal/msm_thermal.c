@@ -51,7 +51,7 @@
 #define TSENS_NAME_MAX 20
 #define TSENS_NAME_FORMAT "tsens_tz_sensor%d"
 #define THERM_SECURE_BITE_CMD 8
-#define CORE_MAX_FREQ 2880000
+#define CORE_MAX_FREQ 2649600
 
 static struct msm_thermal_data msm_thermal_info;
 static struct delayed_work check_temp_work;
