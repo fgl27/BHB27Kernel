@@ -138,6 +138,33 @@ config CPU_FREQ_DEFAULT_GOV_IMPULSE
 	  loading your cpufreq low-level hardware driver, using the
 	  'impulse' governor for latency-sensitive workloads.
 
+config CPU_FREQ_DEFAULT_GOV_NIGHTMARE
+	bool "nightmare"
+	select CPU_FREQ_GOV_NIGHTMARE
+	help
+
+config CPU_FREQ_DEFAULT_GOV_DANCEDANCE
+            bool "dancedance"
+            select CPU_FREQ_GOV_DANCEDANCE
+            help
+              Use the CPUFreq governor 'dancedance' as default.
+
+config CPU_FREQ_DEFAULT_GOV_PEGASUSQ
+	bool "pegasusq"
+	select CPU_FREQ_GOV_PEGASUSQ
+	help
+	Use the CPUFreq governor 'pegasusq' as default.
+
+config CPU_FREQ_DEFAULT_GOV_DARKNESS
+	bool "darkness"
+  	select CPU_FREQ_GOV_DARKNESS
+  	help
+
+config CPU_FREQ_DEFAULT_GOV_ALUCARD
+  	bool "alucard"
+  	select CPU_FREQ_GOV_ALUCARD
+  	help
+
 config CPU_FREQ_DEFAULT_GOV_UMBRELLA_CORE
 	bool "umbrella_core"
 	select CPU_FREQ_GOV_UMBRELLA_CORE
@@ -279,6 +306,28 @@ config CPU_FREQ_GOV_BIOSHOCK
 config CPU_FREQ_GOV_ZZMOOVE
 	   tristate "'zzmoove' cpufreq governor"
 	   depends on CPU_FREQ
+
+config CPU_FREQ_GOV_PEGASUSQ
+	tristate "'pegasusq' cpufreq policy governor"
+
+config CPU_FREQ_GOV_DANCEDANCE
+           tristate "'dancedance' cpufreq governor"
+           depends on CPU_FREQ
+           help
+             dancedance' - a "smart" optimized governor!
+             If in doubt, say N.
+
+config CPU_FREQ_GOV_NIGHTMARE
+	tristate "'nightmare' cpufreq governor"
+	depends on CPU_FREQ
+
+config CPU_FREQ_GOV_DARKNESS
+	tristate "'darkness' cpufreq governor"
+	depends on CPU_FREQ
+
+config CPU_FREQ_GOV_ALUCARD
+	tristate "'alucard' cpufreq governor"
+	depends on CPU_FREQ
 
 config CPU_FREQ_GOV_IMPULSE
 	tristate "'interactive' cpufreq policy governor"
