@@ -366,6 +366,24 @@ config CPU_FREQ_GOV_CHILL
 	  'chill' - similar to 'conservative', but optimized for devices
 	  that go into suspended or display off states often.
 
+config CPU_FREQ_GOV_ONDEMANDPLUS
+	tristate "'ondemandplus' cpufreq policy governor"
+	depends on CPU_FREQ
+	---help---
+	 'ondemandplus' - This driver adds a dynamic cpufreq policy
+	 governor. The governor does a periodic polling and
+	 changes frequency based on the CPU utilization.
+	 The support for this governor depends on CPU capability to
+	 do fast frequency switching (i.e, very low latency frequency
+	 transitions).
+
+	 To compile this driver as a module, choose M here: the
+	 module will be called cpufreq_ondemandplus.
+
+	 For details, take a look at linux/Documentation/cpu-freq.
+
+	 If in doubt, say N.
+
 config CPU_BOOST
 	tristate "Event base short term CPU freq boost"
 	depends on CPU_FREQ
