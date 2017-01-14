@@ -551,7 +551,7 @@ gov_sys_pol_attr_rw(up_threshold);
 gov_sys_pol_attr_rw(down_threshold);
 gov_sys_pol_attr_rw(jump_level);
 gov_sys_pol_attr_rw(ignore_nice_load);
-gov_sys_pol_attr_ro(sampling_rate_min);
+gov_sys_pol_attr_rw(sampling_rate_min);
 
 /********** globals requiring sysfs functions to be defined *************/
 static struct attribute *dbs_attributes_gov_sys[] = {
