@@ -42,7 +42,8 @@ endif
 ifeq ($(CONFIG_CC_STACKPROTECTOR),y)
 KBUILD_CFLAGS	+=-fstack-protector
 endif
-
+# Avoid "Unknown symbol _GLOBAL_OFFSET_TABLE_" errors on arm targets modules
+KBUILD_CFLAGS	+=-fno-pic
 ifeq ($(CONFIG_CPU_BIG_ENDIAN),y)
 KBUILD_CPPFLAGS	+= -mbig-endian
 AS		+= -EB
