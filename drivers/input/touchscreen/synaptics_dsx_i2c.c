@@ -1022,7 +1022,7 @@ static void synaptics_dsx_sensor_state(struct synaptics_rmi4_data *rmi4_data,
 	case STATE_UNKNOWN:
 	case STATE_FLASH:
 		/* no special handling for these states */
-			break;
+		break;
 
 	case STATE_SUSPEND:
 		synaptics_dsx_wait_for_idle(rmi4_data);
@@ -1033,7 +1033,7 @@ static void synaptics_dsx_sensor_state(struct synaptics_rmi4_data *rmi4_data,
 
 		if (!rmi4_data->sensor_sleep)
 			synaptics_rmi4_sensor_sleep(rmi4_data);
-			break;
+		break;
 
 	case STATE_ACTIVE:
 		if (rmi4_data->sensor_sleep)
@@ -1043,7 +1043,7 @@ static void synaptics_dsx_sensor_state(struct synaptics_rmi4_data *rmi4_data,
 			synaptics_rmi4_sensor_one_touch(rmi4_data, false);
 
 		synaptics_rmi4_irq_enable(rmi4_data, true);
-			break;
+		break;
 
 	case STATE_STANDBY:
 		synaptics_rmi4_irq_enable(rmi4_data, false);
@@ -1051,7 +1051,7 @@ static void synaptics_dsx_sensor_state(struct synaptics_rmi4_data *rmi4_data,
 		/* initial conditions apply to all */
 		if (!rmi4_data->sensor_sleep)
 			synaptics_rmi4_sensor_sleep(rmi4_data);
-			break;
+		break;
 
 	case STATE_BL:
 		if (!rmi4_data->in_bootloader)
@@ -1060,7 +1060,7 @@ static void synaptics_dsx_sensor_state(struct synaptics_rmi4_data *rmi4_data,
 		synaptics_rmi4_irq_enable(rmi4_data, false);
 		if (rmi4_data->sensor_sleep)
 			synaptics_rmi4_sensor_wake(rmi4_data);
-			break;
+		break;
 	}
 
 	pr_info("state change %s -> %s\n",
