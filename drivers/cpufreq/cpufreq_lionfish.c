@@ -45,6 +45,7 @@ struct lf_cpu_dbs_info_s {
 struct lf_dbs_tuners {
 	unsigned int ignore_nice_load;
 	unsigned int sampling_rate;
+	unsigned int sampling_rate_min;
 	unsigned int sampling_up_factor;
 	unsigned int sampling_down_factor;
 	unsigned int jump_threshold;
@@ -77,7 +78,6 @@ struct lf_dbs_data {
 /* Governor per policy data */
 struct lf_gdbs_data {
 	struct lf_dbs_data *cdata;
-	unsigned int min_sampling_rate;
 	int usage_count;
 	struct lf_dbs_tuners *tuners;
 
@@ -124,21 +124,6 @@ static ssize_t store_##file_name##_gov_pol				\
 #define lf_show_store_one(_gov, file_name)				\
 lf_show_one(_gov, file_name);						\
 lf_store_one(_gov, file_name)
-
-#define lf_declare_show_sampling_rate_min(_gov)				\
-static ssize_t show_sampling_rate_min_gov_sys				\
-(struct kobject *kobj, struct attribute *attr, char *buf)		\
-{									\
-	struct lf_gdbs_data *dbs_data = _gov##_dbs_cdata.gdbs_data;	\
-	return sprintf(buf, "%u\n", dbs_data->min_sampling_rate);	\
-}									\
-									\
-static ssize_t show_sampling_rate_min_gov_pol				\
-(struct cpufreq_policy *policy, char *buf)				\
-{									\
-	struct lf_gdbs_data *dbs_data = policy->governor_data;		\
-	return sprintf(buf, "%u\n", dbs_data->min_sampling_rate);	\
-}
 
 /************************** global variables ****************************/
 static DEFINE_PER_CPU(struct lf_cpu_dbs_info_s, lf_cpu_dbs_info);
@@ -433,7 +418,22 @@ static ssize_t store_sampling_rate(struct lf_gdbs_data *dbs_data, const char *bu
 	if (ret != 1)
 		return -EINVAL;
 
-	lf_tuners->sampling_rate = max(input, dbs_data->min_sampling_rate);
+	lf_tuners->sampling_rate = max(input, dbs_data->tuners->sampling_rate_min);
+	return count;
+}
+
+static ssize_t store_sampling_rate_min(struct lf_gdbs_data *dbs_data, const char *buf,
+		size_t count)
+{
+	struct lf_dbs_tuners *lf_tuners = dbs_data->tuners;
+	unsigned int input;
+	int ret;
+	ret = sscanf(buf, "%u", &input);
+
+	if (ret != 1)
+		return -EINVAL;
+
+	lf_tuners->sampling_rate_min = min(input, dbs_data->tuners->sampling_rate);
 	return count;
 }
 
@@ -541,7 +541,7 @@ lf_show_store_one(lf, up_threshold);
 lf_show_store_one(lf, down_threshold);
 lf_show_store_one(lf, jump_level);
 lf_show_store_one(lf, ignore_nice_load);
-lf_declare_show_sampling_rate_min(lf);
+lf_show_store_one(lf, sampling_rate_min);
 
 gov_sys_pol_attr_rw(sampling_rate);
 gov_sys_pol_attr_rw(sampling_up_factor);
@@ -670,13 +670,13 @@ static int lf_init(struct lf_gdbs_data *dbs_data)
 	tuners->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
 	tuners->ignore_nice_load = 0;
 
-	dbs_data->tuners = tuners;
-
 	/*
 	 * you want at least 8 jiffies between sample intervals for the
 	 * CPU usage stats to be reasonable
 	 */
-	dbs_data->min_sampling_rate = jiffies_to_usecs(8);
+	tuners->sampling_rate_min = jiffies_to_usecs(8);
+
+	dbs_data->tuners = tuners;
 
 	mutex_init(&dbs_data->mutex);
 	return 0;
@@ -752,9 +752,9 @@ static int lf_cpufreq_governor_dbs(struct cpufreq_policy *policy,
 		 * and use whichever is greater. By default, we will sample
 		 * at half the fastest acceptable rate.
 		 */
-		dbs_data->min_sampling_rate = max(dbs_data->min_sampling_rate,
+		dbs_data->tuners->sampling_rate_min = max(dbs_data->tuners->sampling_rate_min,
 				LATENCY_MULTIPLIER * latency);
-		dbs_data->tuners->sampling_rate = dbs_data->min_sampling_rate * 2;
+		dbs_data->tuners->sampling_rate = dbs_data->tuners->sampling_rate_min * 2;
 
 		if (!policy->governor->initialized) {
 			cpufreq_register_notifier(dbs_data->cdata->notifier_block,
