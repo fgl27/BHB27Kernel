@@ -230,6 +230,7 @@ static inline bool __has_cursum_space(struct f2fs_summary_block *sum, int size,
 #define FS_GOING_DOWN_FULLSYNC 0x0     /* going down with full sync */
 #define FS_GOING_DOWN_METASYNC 0x1     /* going down with metadata */
 #define FS_GOING_DOWN_NOSYNC   0x2     /* going down */
+#define FS_GOING_STOP_GC       0x3     /* stoping all gc */
 
 #define F2FS_IOCTL_MAGIC		0xf5
 #define F2FS_IOC_START_ATOMIC_WRITE	_IO(F2FS_IOCTL_MAGIC, 1)
@@ -688,6 +689,7 @@ enum {
 	SBI_IS_CLOSE,				/* specify unmounting */
 	SBI_NEED_FSCK,				/* need fsck.f2fs to fix */
 	SBI_POR_DOING,				/* recovery is doing or not */
+	SBI_NO_GC,				/* disable f2fs gc */
 };
 
 struct f2fs_sb_info {
@@ -750,6 +752,7 @@ struct f2fs_sb_info {
 	unsigned int total_node_count;		/* total node block count */
 	unsigned int total_valid_node_count;	/* valid node block count */
 	unsigned int total_valid_inode_count;	/* valid inode count */
+	loff_t max_file_blocks;			/* max block index of file */
 	int active_logs;			/* # of active logs */
 	int dir_level;				/* directory level */
 
@@ -1582,6 +1585,9 @@ void handle_failed_inode(struct inode *);
  * namei.c
  */
 struct dentry *f2fs_get_parent(struct dentry *child);
+#ifdef CONFIG_F2FS_EMULATED_SD
+void f2fs_set_nocase_dop(struct inode *inode);
+#endif
 
 /*
  * dir.c
