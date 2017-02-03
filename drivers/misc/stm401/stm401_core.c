@@ -249,8 +249,7 @@ int64_t stm401_timestamp_ns(void)
 
 void stm401_wake(struct stm401_data *ps_stm401)
 {
-	if (ps_stm401 != NULL && ps_stm401->pdata != NULL
-			&& ps_stm401->mode > BOOTMODE) {
+	if (ps_stm401 != NULL && ps_stm401->pdata != NULL) {
 		if (!(ps_stm401->sh_lowpower_enabled))
 			return;
 
@@ -281,8 +280,7 @@ void stm401_wake(struct stm401_data *ps_stm401)
 
 void stm401_sleep(struct stm401_data *ps_stm401)
 {
-	if (ps_stm401 != NULL && ps_stm401->pdata != NULL
-			&& ps_stm401->mode > BOOTMODE) {
+	if (ps_stm401 != NULL && ps_stm401->pdata != NULL) {
 		if (!(ps_stm401->sh_lowpower_enabled))
 			return;
 
@@ -296,7 +294,7 @@ void stm401_sleep(struct stm401_data *ps_stm401)
 				udelay(1);
 			}
 		} else {
-			dev_dbg(&ps_stm401->client->dev,
+			dev_err(&ps_stm401->client->dev,
 				"stm401_sleep called too many times: %d",
 				ps_stm401->sh_wakeup_count);
 		}
@@ -412,7 +410,7 @@ int stm401_i2c_write_read_no_reset(struct stm401_data *ps_stm401,
 	if (buf == NULL || writelen == 0 || readlen == 0)
 		return -EFAULT;
 
-	if (ps_stm401->mode <= BOOTMODE)
+	if (ps_stm401->mode == BOOTMODE)
 		return -EFAULT;
 
 	tries = 0;
@@ -443,7 +441,7 @@ int stm401_i2c_read_no_reset(struct stm401_data *ps_stm401,
 	if (buf == NULL || len == 0)
 		return -EFAULT;
 
-	if (ps_stm401->mode <= BOOTMODE)
+	if (ps_stm401->mode == BOOTMODE)
 		return -EFAULT;
 
 	tries = 0;
@@ -470,7 +468,7 @@ int stm401_i2c_write_no_reset(struct stm401_data *ps_stm401,
 	int err = 0;
 	int tries = 0;
 
-	if (ps_stm401->mode <= BOOTMODE)
+	if (ps_stm401->mode == BOOTMODE)
 		return -EFAULT;
 
 	do {
@@ -538,7 +536,7 @@ int stm401_i2c_write_read(struct stm401_data *ps_stm401, u8 *buf,
 {
 	int tries, err = 0;
 
-	if (ps_stm401->mode <= BOOTMODE)
+	if (ps_stm401->mode == BOOTMODE)
 		return -EFAULT;
 
 	if (buf == NULL || writelen == 0 || readlen == 0)
@@ -569,7 +567,7 @@ int stm401_i2c_read(struct stm401_data *ps_stm401, u8 *buf, int len)
 	if (buf == NULL || len == 0)
 		return -EFAULT;
 
-	if (ps_stm401->mode <= BOOTMODE)
+	if (ps_stm401->mode == BOOTMODE)
 		return -EFAULT;
 
 	tries = 0;
@@ -592,7 +590,7 @@ int stm401_i2c_write(struct stm401_data *ps_stm401, u8 *buf, int len)
 	int err = 0;
 	int tries = 0;
 
-	if (ps_stm401->mode <= BOOTMODE)
+	if (ps_stm401->mode == BOOTMODE)
 		return -EFAULT;
 
 	tries = 0;
@@ -797,7 +795,7 @@ static int stm401_gpio_init(struct stm401_platform_data *pdata,
 		goto free_int;
 	}
 	gpio_direction_output(pdata->gpio_reset, 1);
-	gpio_set_value(pdata->gpio_reset, 0);
+	gpio_set_value(pdata->gpio_reset, 1);
 	err = gpio_export(pdata->gpio_reset, 0);
 	if (err) {
 		dev_err(&stm401_misc_data->client->dev,
@@ -933,7 +931,7 @@ void clear_interrupt_status_work_func(struct work_struct *work)
 	dev_dbg(&ps_stm401->client->dev, "clear_interrupt_status_work_func\n");
 	mutex_lock(&ps_stm401->lock);
 
-	if (ps_stm401->mode <= BOOTMODE)
+	if (ps_stm401->mode == BOOTMODE)
 		goto EXIT;
 
 	if (ps_stm401->is_suspended)
@@ -987,7 +985,7 @@ static int stm401_fb_notifier_callback(struct notifier_block *self,
 		goto exit;
 	}
 
-	if (ps_stm401->in_reset_and_init || ps_stm401->mode <= BOOTMODE) {
+	if (ps_stm401->in_reset_and_init || ps_stm401->mode == BOOTMODE) {
 		/* store the kernel's vote */
 		stm401_store_vote_aod_enabled(ps_stm401,
 				AOD_QP_ENABLED_VOTE_KERN, vote);
@@ -1286,14 +1284,7 @@ static int stm401_probe(struct i2c_client *client,
 
 	ps_stm401->is_suspended = false;
 
-	/* We could call switch_stm401_mode(NORMALMODE) at this point, but
-	 * instead we will hold the part in reset and only go to NORMALMODE on a
-	 * request to do so from the flasher.  The flasher must be present, and
-	 * it must verify the firmware file is available before switching to
-	 * NORMALMODE. This is to prevent a build that is missing firmware or
-	 * flasher from behaving as a normal build (with factory firmware in the
-	 * part).
-	 */
+	switch_stm401_mode(NORMALMODE);
 
 	mutex_unlock(&ps_stm401->lock);
 
