@@ -289,7 +289,7 @@ static int pcxhr_dsp_load(struct pcxhr_mgr *mgr, int index,
 {
 	int err, card_index;
 
-	snd_printdd("loading dsp [%d] size = %Zd\n", index, dsp->size);
+	snd_printdd("loading dsp [%d] size = %zd\n", index, dsp->size);
 
 	switch (index) {
 	case PCXHR_FIRMWARE_XLX_INT_INDEX:

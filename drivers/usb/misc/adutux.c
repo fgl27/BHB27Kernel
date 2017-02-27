@@ -405,7 +405,7 @@ static ssize_t adu_read(struct file *file, __user char *buffer, size_t count,
 	unsigned long flags;
 	DECLARE_WAITQUEUE(wait, current);
 
-	dbg(2," %s : enter, count = %Zd, file=%p", __func__, count, file);
+	dbg(2," %s : enter, count = %zd, file=%p", __func__, count, file);
 
 	dev = file->private_data;
 	dbg(2," %s : dev=%p", __func__, dev);
@@ -566,7 +566,7 @@ static ssize_t adu_write(struct file *file, const __user char *buffer,
 	unsigned long flags;
 	int retval;
 
-	dbg(2," %s : enter, count = %Zd", __func__, count);
+	dbg(2," %s : enter, count = %zd", __func__, count);
 
 	dev = file->private_data;
 
@@ -614,17 +614,17 @@ static ssize_t adu_write(struct file *file, const __user char *buffer,
 				goto exit_nolock;
 			}
 
-			dbg(4," %s : in progress, count = %Zd", __func__, count);
+			dbg(4," %s : in progress, count = %zd", __func__, count);
 		} else {
 			spin_unlock_irqrestore(&dev->buflock, flags);
 			set_current_state(TASK_RUNNING);
 			remove_wait_queue(&dev->write_wait, &waita);
-			dbg(4," %s : sending, count = %Zd", __func__, count);
+			dbg(4," %s : sending, count = %zd", __func__, count);
 
 			/* write the data into interrupt_out_buffer from userspace */
 			buffer_size = usb_endpoint_maxp(dev->interrupt_out_endpoint);
 			bytes_to_write = count > buffer_size ? buffer_size : count;
-			dbg(4," %s : buffer_size = %Zd, count = %Zd, bytes_to_write = %Zd",
+			dbg(4," %s : buffer_size = %zd, count = %zd, bytes_to_write = %zd",
 			    __func__, buffer_size, count, bytes_to_write);
 
 			if (copy_from_user(dev->interrupt_out_buffer, buffer, bytes_to_write) != 0) {

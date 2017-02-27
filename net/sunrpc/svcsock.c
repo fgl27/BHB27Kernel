@@ -267,7 +267,7 @@ static int svc_sendto(struct svc_rqst *rqstp, struct xdr_buf *xdr)
 			       rqstp->rq_respages[0], tailoff);
 
 out:
-	dprintk("svc: socket %p sendto([%p %Zu... ], %d) = %d (addr %s)\n",
+	dprintk("svc: socket %p sendto([%p %zu... ], %d) = %d (addr %s)\n",
 		svsk, xdr->head[0].iov_base, xdr->head[0].iov_len,
 		xdr->len, len, svc_print_addr(rqstp, buf, sizeof(buf)));
 
@@ -340,7 +340,7 @@ static int svc_recvfrom(struct svc_rqst *rqstp, struct kvec *iov, int nr,
 	len = kernel_recvmsg(svsk->sk_sock, &msg, iov, nr, buflen,
 				msg.msg_flags);
 
-	dprintk("svc: socket %p recvfrom(%p, %Zu) = %d\n",
+	dprintk("svc: socket %p recvfrom(%p, %zu) = %d\n",
 		svsk, iov[0].iov_base, iov[0].iov_len, len);
 	return len;
 }

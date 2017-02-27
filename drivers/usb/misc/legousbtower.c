@@ -597,7 +597,7 @@ static ssize_t tower_read (struct file *file, char __user *buffer, size_t count,
 	int retval = 0;
 	unsigned long timeout = 0;
 
-	dbg(2, "%s: enter, count = %Zd", __func__, count);
+	dbg(2, "%s: enter, count = %zd", __func__, count);
 
 	dev = file->private_data;
 
@@ -686,7 +686,7 @@ static ssize_t tower_write (struct file *file, const char __user *buffer, size_t
 	size_t bytes_to_write;
 	int retval = 0;
 
-	dbg(2, "%s: enter, count = %Zd", __func__, count);
+	dbg(2, "%s: enter, count = %zd", __func__, count);
 
 	dev = file->private_data;
 
@@ -723,7 +723,7 @@ static ssize_t tower_write (struct file *file, const char __user *buffer, size_t
 
 	/* write the data into interrupt_out_buffer from userspace */
 	bytes_to_write = min_t(int, count, write_buffer_size);
-	dbg(4, "%s: count = %Zd, bytes_to_write = %Zd", __func__, count, bytes_to_write);
+	dbg(4, "%s: count = %zd, bytes_to_write = %zd", __func__, count, bytes_to_write);
 
 	if (copy_from_user (dev->interrupt_out_buffer, buffer, bytes_to_write)) {
 		retval = -EFAULT;

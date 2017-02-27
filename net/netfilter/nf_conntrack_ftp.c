@@ -265,7 +265,7 @@ static int find_pattern(const char *data, size_t dlen,
 {
 	size_t i;
 
-	pr_debug("find_pattern `%s': dlen = %Zu\n", pattern, dlen);
+	pr_debug("find_pattern `%s': dlen = %zu\n", pattern, dlen);
 	if (dlen == 0)
 		return 0;
 

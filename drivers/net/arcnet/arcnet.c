@@ -136,7 +136,7 @@ static int __init arcnet_init(void)
 		arc_proto_map[count] = arc_proto_default;
 
 	BUGLVL(D_DURING)
-	    printk("arcnet: struct sizes: %Zd %Zd %Zd %Zd %Zd\n",
+	    printk("arcnet: struct sizes: %zd %zd %zd %zd %zd\n",
 		 sizeof(struct arc_hardware), sizeof(struct arc_rfc1201),
 		sizeof(struct arc_rfc1051), sizeof(struct arc_eth_encap),
 		   sizeof(struct archdr));

@@ -698,7 +698,7 @@ bl_write_pagelist(struct nfs_write_data *wdata, int sync)
 	int npg_per_block =
 	    NFS_SERVER(header->inode)->pnfs_blksize >> PAGE_CACHE_SHIFT;
 
-	dprintk("%s enter, %Zu@%lld\n", __func__, count, offset);
+	dprintk("%s enter, %zu@%lld\n", __func__, count, offset);
 
 	if (header->dreq != NULL &&
 	    (!IS_ALIGNED(offset, NFS_SERVER(header->inode)->pnfs_blksize) ||

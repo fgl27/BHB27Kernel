@@ -3840,7 +3840,7 @@ static int snd_soc_register_dais(struct device *dev,
 	struct snd_soc_dai *dai;
 	int i, ret = 0;
 
-	dev_dbg(dev, "ASoC: dai register %s #%Zu\n", dev_name(dev), count);
+	dev_dbg(dev, "ASoC: dai register %s #%zu\n", dev_name(dev), count);
 
 	for (i = 0; i < count; i++) {
 

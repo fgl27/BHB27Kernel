@@ -652,7 +652,7 @@ static int xc5000_fwupload(struct dvb_frontend *fe)
 		ret = XC_RESULT_RESET_FAILURE;
 		goto out;
 	} else {
-		printk(KERN_DEBUG "xc5000: firmware read %Zu bytes.\n",
+		printk(KERN_DEBUG "xc5000: firmware read %zu bytes.\n",
 		       fw->size);
 		ret = XC_RESULT_SUCCESS;
 	}
