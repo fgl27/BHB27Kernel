@@ -399,6 +399,7 @@ static int do_fsync(unsigned int fd, int datasync)
                                 INIT_WORK(&fwork->work, do_afsync_work);
                                 queue_work(fsync_workqueue, &fwork->work);
                                 fdput(f);
+                                inc_syscfs(current);
                                 return 0;
                         }
                 }
@@ -407,6 +408,7 @@ no_async:
 #endif
 		ret = vfs_fsync(f.file, datasync);
 		fdput(f);
+		inc_syscfs(current);
 #ifdef CONFIG_ASYNC_FSYNC
                 fsync_diff = ktime_sub(ktime_get(), fsync_t);
                 if (ktime_to_ms(fsync_diff) >= 5000) {
