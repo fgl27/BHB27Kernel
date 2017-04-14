@@ -546,6 +546,7 @@ typedef struct sDphHashNode
      */
 
     tANI_U8 isDisassocDeauthInProgress;
+    bool sta_deletion_in_progress; 
     struct sDphHashNode  *next;
     tANI_S8 del_sta_ctx_rssi;
 } tDphHashNode, *tpDphHashNode;

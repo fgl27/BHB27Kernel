@@ -2463,7 +2463,7 @@ static eHalStatus roamRoamConnectStatusUpdateHandler( hdd_adapter_t *pAdapter, t
       case eCSR_ROAM_RESULT_IBSS_NEW_PEER:
       {
          hdd_station_ctx_t *pHddStaCtx = WLAN_HDD_GET_STATION_CTX_PTR(pAdapter);
-         struct station_info staInfo;
+         struct station_info *staInfo;
 
          pr_info ( "IBSS New Peer indication from SME "
                     "with peerMac " MAC_ADDRESS_STR " BSSID: " MAC_ADDRESS_STR " and stationID= %d",
@@ -2497,13 +2497,22 @@ static eHalStatus roamRoamConnectStatusUpdateHandler( hdd_adapter_t *pAdapter, t
                vosStatus, vosStatus );
          }
          pHddStaCtx->ibss_sta_generation++;
-         memset(&staInfo, 0, sizeof(staInfo));
-         staInfo.filled = 0;
-         staInfo.generation = pHddStaCtx->ibss_sta_generation;
+
+         staInfo = vos_mem_malloc(sizeof(*staInfo));
+         if (staInfo == NULL) {
+             VOS_TRACE(VOS_MODULE_ID_HDD, VOS_TRACE_LEVEL_ERROR,
+                       "memory allocation for station_info failed");
+             return eHAL_STATUS_FAILED_ALLOC;
+         }
+
+         memset(staInfo, 0, sizeof(*staInfo));
+         staInfo->filled = 0;
+         staInfo->generation = pHddStaCtx->ibss_sta_generation;
 
          cfg80211_new_sta(pAdapter->dev,
                       (const u8 *)pRoamInfo->peerMac,
-                      &staInfo, GFP_KERNEL);
+                      staInfo, GFP_KERNEL);
+         vos_mem_free(staInfo);
 
          if ( eCSR_ENCRYPT_TYPE_WEP40_STATICKEY == pHddStaCtx->ibss_enc_key.encType
             ||eCSR_ENCRYPT_TYPE_WEP104_STATICKEY == pHddStaCtx->ibss_enc_key.encType
@@ -3373,7 +3382,8 @@ hdd_smeRoamCallback(void *pContext, tCsrRoamInfo *pRoamInfo, tANI_U32 roamId,
                 if((pHddCtx) &&
                    (VOS_TRUE == pHddStaCtx->hdd_ReassocScenario) &&
                    (TRUE == pHddCtx->hdd_wlan_suspended) &&
-                   (eCSR_ROAM_RESULT_NONE == roamResult))
+                   ((eCSR_ROAM_RESULT_NONE == roamResult)||
+                     (pRoamInfo && pRoamInfo->is11rAssoc)))
                 {
                     /* Send DTIM period to the FW; only if the wlan is already
                        in suspend. This is the case with roaming (reassoc),
@@ -3397,7 +3407,8 @@ hdd_smeRoamCallback(void *pContext, tCsrRoamInfo *pRoamInfo, tANI_U32 roamId,
                     }
                 }
                 halStatus = hdd_RoamSetKeyCompleteHandler( pAdapter, pRoamInfo, roamId, roamStatus, roamResult );
-                if (eCSR_ROAM_RESULT_AUTHENTICATED == roamResult) {
+                if ((eCSR_ROAM_RESULT_AUTHENTICATED == roamResult) ||
+                     (pRoamInfo && pRoamInfo->is11rAssoc)) {
                     pHddStaCtx->hdd_ReassocScenario = VOS_FALSE;
                     hddLog(LOG1,
                            FL("hdd_ReassocScenario set to: %d, set key complete, session: %d"),

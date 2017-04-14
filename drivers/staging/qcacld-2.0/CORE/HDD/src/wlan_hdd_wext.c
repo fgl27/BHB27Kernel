@@ -2583,6 +2583,13 @@ static int __iw_set_genie(struct net_device *dev, struct iw_request_info *info,
         hddLog(VOS_TRACE_LEVEL_INFO, "%s: IE[0x%X], LEN[%d]",
             __func__, elementId, eLen);
 
+        if (remLen < eLen) {
+            hddLog(LOGE, "Remaining len: %u less than ie len: %u",
+                   remLen, eLen);
+            ret = -EINVAL;
+            goto exit;
+        }
+
         switch ( elementId )
          {
             case IE_EID_VENDOR:
@@ -2665,8 +2672,11 @@ static int __iw_set_genie(struct net_device *dev, struct iw_request_info *info,
                 hddLog (LOGE, "%s Set UNKNOWN IE %X",__func__, elementId);
                 goto exit;
     }
-        genie += eLen;
         remLen -= eLen;
+
+        /* Move genie only if next element is present */
+        if (remLen >= 2)
+            genie += eLen;
     }
 exit:
     EXIT();
@@ -2744,16 +2754,22 @@ static int __iw_get_genie(struct net_device *dev, struct iw_request_info *info,
                                    pAdapter->sessionId,
                                    &length,
                                    genIeBytes);
-    length = VOS_MIN((u_int16_t) length, DOT11F_IE_RSN_MAX_LEN);
-    if (wrqu->data.length < length)
-    {
-        hddLog(LOG1, "%s: failed to copy data to user buffer", __func__);
+    if (eHAL_STATUS_SUCCESS != status) {
+        hddLog(LOGE, FL("failed to get WPA-RSN IE data"));
         return -EFAULT;
     }
-    vos_mem_copy( extra, (v_VOID_t*)genIeBytes, length);
+
     wrqu->data.length = length;
 
-    hddLog(LOG1,"%s: RSN IE of %d bytes returned", __func__, wrqu->data.length );
+    if (length > DOT11F_IE_RSN_MAX_LEN) {
+        hddLog(LOGE,
+               FL("invalid buffer length length:%d"), length);
+        return -E2BIG;
+    }
+
+    vos_mem_copy( extra, (v_VOID_t*)genIeBytes, length);
+
+    hddLog(LOG1, FL("RSN IE of %d bytes returned"), wrqu->data.length );
 
     EXIT();
 
