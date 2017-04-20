@@ -31,6 +31,10 @@ static bool enable_bluedroid_timer_ws = true;
 module_param(enable_bluedroid_timer_ws, bool, 0644);
 static bool enable_bluesleep_ws = true;
 module_param(enable_bluesleep_ws, bool, 0644);
+static bool enable_timerfd_ws = true;
+module_param(enable_timerfd_ws, bool, 0644);
+static bool enable_netlink_ws = true;
+module_param(enable_netlink_ws, bool, 0644);
 
 #include "power.h"
 
@@ -481,7 +485,11 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 		(!enable_bluedroid_timer_ws &&
 			!strcmp(ws->name, "bluedroid_timer")) ||
 		(!enable_bluesleep_ws &&
-			!strcmp(ws->name, "bluesleep")))) {
+			!strcmp(ws->name, "bluesleep")) ||
+		(!enable_bluesleep_ws &&
+			!strcmp(ws->name, "[timerfd]")) ||
+		(!enable_bluesleep_ws &&
+			!strcmp(ws->name, "NETLINK")))) {
 		/*
 		 * let's try and deactivate this wakeup source since the user
 		 * clearly doesn't want it. The user is responsible for any
