@@ -1831,7 +1831,7 @@ static int __qseecom_update_cmd_buf(void *msg, bool cleanup,
 						sg_dma_address(sg);
 					update->len = sg->length;
 				}
-					len += sg->length;
+				len += sg->length;
 				update++;
 				sg = sg_next(sg);
 			}

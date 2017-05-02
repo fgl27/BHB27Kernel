@@ -2571,7 +2571,7 @@ static void mxt_set_sensor_state(struct mxt_data *data, int state)
 		mxt_set_t7_power_cfg(data, MXT_POWER_CFG_WG);
 		if (!data->in_bootloader)
 			mxt_sensor_state_config(data, ACTIVE_IDX);
-			break;
+		break;
 #endif
 
 	case STATE_ACTIVE:
