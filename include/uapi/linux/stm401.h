@@ -471,10 +471,6 @@ struct stm_response {
 #define I2C_RESPONSE_LENGTH		8
 
 #define STM401_MAXDATA_LENGTH		256
-#define STM401_HEADER_LENGTH		1
-#define STM401_FOOTER_LENGTH		1
-#define STM401_MAX_PACKET_LENGTH	\
-	(STM401_HEADER_LENGTH + STM401_MAXDATA_LENGTH + STM401_FOOTER_LENGTH)
 
 #define STM401_IR_GESTURE_CNT      8
 #define STM401_IR_SZ_GESTURE       4
@@ -579,10 +575,10 @@ struct stm401_quickpeek_message {
 	u8 message;
 	u8 panel_state;
 	u8 buffer_id;
-	s16 x1;
-	s16 y1;
-	s16 x2;
-	s16 y2;
+	u16 x1;
+	u16 y1;
+	u16 x2;
+	u16 y2;
 	struct list_head list;
 };
 
