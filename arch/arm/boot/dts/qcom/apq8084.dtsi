@@ -5032,7 +5032,7 @@
 			high-threshold-uamp = <3000000>;
 			low-threshold-uamp = <1000000>;
 			mitigation-freq-khz = <2880000>;
-			mitigation-gpu-freq-khz = <350000>;
+			mitigation-gpu-freq-khz = <800000>;
 			max-gpu-freq-khz = <800000>;
 			ibat-channel = <0x15>;
 			adc-interval-usec = <3900>;
