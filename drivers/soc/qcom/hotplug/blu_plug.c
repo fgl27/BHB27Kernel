@@ -54,6 +54,7 @@ static unsigned int plug_threshold[MAX_ONLINE] = {[0 ... MAX_ONLINE-1] = DEF_PLU
 
 static struct delayed_work dyn_work;
 static struct workqueue_struct *dyn_workq;
+#ifdef CONFIG_STATE_NOTIFIER
 static struct notifier_block notify;
 
 /* Bring online each possible CPU up to max_online cores */
@@ -67,7 +68,7 @@ static void __ref up_all(void)
 
 	down_timer = 0;
 }
-
+#endif
 /* Iterate through possible CPUs and bring online the first offline found */
 static void __ref up_one(void)
 {
