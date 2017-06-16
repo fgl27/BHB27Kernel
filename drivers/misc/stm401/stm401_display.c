@@ -276,7 +276,8 @@ exit:
 
 error:
 	stm401_quickpeek_status_ack(ps_stm401, qp_message, AOD_QP_ACK_INVALID);
-	kfree(qp_message);
+	if (qp_message != NULL)
+		kfree(qp_message);
 	ret = -EIO;
 	goto exit;
 }
