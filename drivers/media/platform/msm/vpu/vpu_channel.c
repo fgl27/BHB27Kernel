@@ -208,7 +208,7 @@ static struct vpu_sync_transact *get_transact(struct vpu_channel_hal *phal,
 				void *buf, u32 buf_size)
 {
 	int i;
-	struct vpu_sync_transact *ptrans, *found;
+	struct vpu_sync_transact *ptrans, *found = NULL;
 
 	/* get one from the list, change state from 0 to 1; */
 	for (i = 0; i < VPU_SYNC_TRANSACT_NUM; i++) {
@@ -229,7 +229,7 @@ static struct vpu_sync_transact *get_transact(struct vpu_channel_hal *phal,
 
 		mutex_unlock(&ptrans->slock);
 
-		if (found)
+		if (found != NULL && found)
 			return found;
 	}
 
