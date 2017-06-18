@@ -597,6 +597,7 @@ static int msm_isp_buf_enqueue(struct msm_isp_buf_mgr *buf_mgr,
 	int rc = -1, buf_state;
 	struct msm_isp_bufq *bufq = NULL;
 	struct msm_isp_buffer *buf_info = NULL;
+	uint32_t temp_buf_src;
 	buf_state = msm_isp_buf_prepare(buf_mgr, info, NULL);
 	if (buf_state < 0) {
 		pr_err("%s: Buf prepare failed\n", __func__);
@@ -619,7 +620,8 @@ static int msm_isp_buf_enqueue(struct msm_isp_buf_mgr *buf_mgr,
 				pr_err("%s: Invalid bufq\n", __func__);
 				return rc;
 			}
-			if (BUF_SRC(bufq->stream_id))
+			temp_buf_src = BUF_SRC(bufq->stream_id);
+			if (temp_buf_src)
 				pr_err("%s: Invalid native buffer state\n",
 					__func__);
 			else
