@@ -941,6 +941,7 @@ int diag_device_write(void *buf, int data_type, struct diag_request *write_ptr)
 void diag_update_pkt_buffer(unsigned char *buf, int type)
 {
 	unsigned char *ptr = NULL;
+	unsigned char *ptr_buffer_start = NULL;
 	unsigned char *temp = buf;
 	unsigned int length;
 	int *in_busy = NULL;
@@ -953,11 +954,13 @@ void diag_update_pkt_buffer(unsigned char *buf, int type)
 	switch (type) {
 	case PKT_TYPE:
 		ptr = driver->pkt_buf;
+		ptr_buffer_start = &(*(driver->pkt_buf));
 		length = driver->pkt_length;
 		in_busy = &driver->in_busy_pktdata;
 		break;
 	case DCI_PKT_TYPE:
 		ptr = driver->dci_pkt_buf;
+		ptr_buffer_start = &(*(driver->dci_pkt_buf));
 		length = driver->dci_pkt_length;
 		in_busy = &driver->in_busy_dcipktdata;
 		break;
@@ -972,7 +975,7 @@ void diag_update_pkt_buffer(unsigned char *buf, int type)
 		return;
 	}
 	mutex_lock(&driver->diagchar_mutex);
-	if (CHK_OVERFLOW(ptr, ptr, ptr + PKT_SIZE, length)) {
+	if (CHK_OVERFLOW(ptr_buffer_start, ptr, ptr + PKT_SIZE, length)) {
 		memcpy(ptr, temp , length);
 		*in_busy = 1;
 	} else {

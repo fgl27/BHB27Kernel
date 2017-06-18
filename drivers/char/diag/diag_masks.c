@@ -229,10 +229,11 @@ void diag_toggle_event_mask(int toggle)
 static void diag_update_event_mask(uint8_t *buf, int num_bytes)
 {
 	uint8_t *ptr = driver->event_masks;
+	uint8_t *ptr_buffer_start = &(*(driver->event_masks));
 	uint8_t *temp = buf + 2;
 
 	mutex_lock(&driver->diagchar_mutex);
-	if (CHK_OVERFLOW(ptr, ptr, ptr+EVENT_MASK_SIZE, num_bytes)) {
+	if (CHK_OVERFLOW(ptr_buffer_start, ptr, ptr+EVENT_MASK_SIZE, num_bytes)) {
 		memcpy(ptr, temp, num_bytes);
 		driver->event_status = DIAG_CTRL_MASK_VALID;
 	} else {
