@@ -820,11 +820,10 @@ static ssize_t freq_max_store(struct device *dev,
 					const char *buf, size_t count)
 {
 	int val = 0;
-	int ret = 0;
 
-	ret = convert_to_int(buf, &val);
-	if (ret)
-		return ret;
+	if (!sscanf(buf, "%d", &val))
+		return -EINVAL;
+
 	gbcl->btm_freq_max = max_t(uint32_t, val, gbcl->btm_freq_limit);
 
 	return count;
