@@ -764,37 +764,15 @@ static ssize_t iavail_high_threshold_value_store(struct device *dev,
 	return count;
 }
 
-static int convert_to_int(const char *buf, int *val)
-{
-	int ret = 0;
-
-	if (!gbcl)
-		return -EPERM;
-	if (gbcl->bcl_mode != BCL_DEVICE_DISABLED) {
-		pr_err("BCL is not disabled\n");
-			return -EINVAL;
-	}
-
-	ret = kstrtoint(buf, 10, val);
-	if (ret || (*val < 0)) {
-		pr_err("Invalid high threshold %s val:%d ret:%d\n", buf, *val,
-			ret);
-			return -EINVAL;
-	}
-
-	return ret;
-}
-
 static ssize_t high_ua_store(struct device *dev,
 					struct device_attribute *attr,
 					const char *buf, size_t count)
 {
 	int val = 0;
-	int ret = 0;
 
-	ret = convert_to_int(buf, &val);
-	if (ret)
-		return ret;
+	if (!sscanf(buf, "%d", &val))
+		return -EINVAL;
+
 	gbcl->btm_high_threshold_uv = current_to_voltage(gbcl, val);
 
 	return count;
@@ -805,11 +783,10 @@ static ssize_t low_ua_store(struct device *dev,
 					const char *buf, size_t count)
 {
 	int val = 0;
-	int ret = 0;
 
-	ret = convert_to_int(buf, &val);
-	if (ret)
-		return ret;
+	if (!sscanf(buf, "%d", &val))
+		return -EINVAL;
+
 	gbcl->btm_low_threshold_uv = current_to_voltage(gbcl, val);
 
 	return count;
@@ -834,11 +811,10 @@ static ssize_t vph_low_store(struct device *dev,
 					const char *buf, size_t count)
 {
 	int val = 0;
-	int ret = 0;
 
-	ret = convert_to_int(buf, &val);
-	if (ret)
-		return ret;
+	if (!sscanf(buf, "%d", &val))
+		return -EINVAL;
+
 	gbcl->btm_vph_low_thresh = val;
 
 	return count;
@@ -849,11 +825,10 @@ static ssize_t vph_high_store(struct device *dev,
 					const char *buf, size_t count)
 {
 	int val = 0;
-	int ret = 0;
 
-	ret = convert_to_int(buf, &val);
-	if (ret)
-		return ret;
+	if (!sscanf(buf, "%d", &val))
+		return -EINVAL;
+
 	gbcl->btm_vph_high_thresh = val;
 
 	return count;
