@@ -4842,7 +4842,7 @@
 		qcom,bcl-enable;
 		qcom,ibat-vadc = <&pma8084_vadc>;
 		qcom,ibat-threshold-adc_tm = <&pma8084_adc_tm>;
-		qcom,bcl-hotplug-list = <&CPU2 &CPU3>;
+		qcom,bcl-freq-control-list = <&CPU0 &CPU1 &CPU2 &CPU3>;
 		qcom,ibat-monitor {
 			high-threshold-uamp = <3000000>;
 			low-threshold-uamp = <1000000>;
@@ -4854,8 +4854,8 @@
 			uv-to-ua-numerator = <2>;
 			uv-to-ua-denominator = <1>;
 			vph-channel = <0x07>;
-			vph-high-threshold-uv = <3650000>;
-			vph-low-threshold-uv = <3150000>;
+			vph-high-threshold-uv = <3600000>;
+			vph-low-threshold-uv = <3200000>;
 			thermal-handle = <&msm_thermal_freq>;
 			smb135x-handle = <&smb1357_otg_vreg>;
 		};
