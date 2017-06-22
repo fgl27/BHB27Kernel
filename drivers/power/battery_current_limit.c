@@ -814,8 +814,7 @@ static ssize_t vph_low_store(struct device *dev,
 
 	if (!sscanf(buf, "%d", &val))
 		return -EINVAL;
-
-	gbcl->btm_vph_low_thresh = val;
+	gbcl->btm_vph_low_thresh = min_t(uint32_t, val, gbcl->btm_vph_high_thresh);
 
 	return count;
 }
@@ -829,7 +828,7 @@ static ssize_t vph_high_store(struct device *dev,
 	if (!sscanf(buf, "%d", &val))
 		return -EINVAL;
 
-	gbcl->btm_vph_high_thresh = val;
+	gbcl->btm_vph_high_thresh = max_t(uint32_t, val, gbcl->btm_vph_low_thresh);
 
 	return count;
 }
