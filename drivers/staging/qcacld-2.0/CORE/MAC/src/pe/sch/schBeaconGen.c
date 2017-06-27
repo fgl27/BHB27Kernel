@@ -79,7 +79,7 @@ tSirRetStatus schGetP2pIeOffset(tANI_U8 *pExtraIe, tANI_U32 extraIeLen, tANI_U16
     {
         if(*pExtraIe == 0xDD)
         {
-            if ( vos_mem_compare ( (void *)(pExtraIe+2), &P2pOui, sizeof(P2pOui) ) )
+            if ( vos_mem_compare ( (void *)(pExtraIe+2), (void *)&P2pOui, sizeof(P2pOui) ) )
             {
                 status = eSIR_SUCCESS;
                 break;

@@ -158,7 +158,7 @@ wmi_buf_alloc(wmi_unified_t wmi_handle, u_int16_t len)
 	adf_nbuf_set_pktlen(wmi_buf, len);
 	return wmi_buf;
 }
-
+#ifdef BUILD_DEBUG_VERSION
 static u_int8_t* get_wmi_cmd_string(WMI_CMD_ID wmi_command)
 {
 	switch(wmi_command)
@@ -645,7 +645,7 @@ static u_int8_t* get_wmi_cmd_string(WMI_CMD_ID wmi_command)
 	}
 	return "Invalid WMI cmd";
 }
-
+#endif
 /* worker thread to recover when Target doesn't respond with credits */
 static void recovery_work_handler(struct work_struct *recovery)
 {

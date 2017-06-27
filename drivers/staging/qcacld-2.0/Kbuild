@@ -98,7 +98,7 @@ CONFIG_QCOM_ESE_UPLOAD := y
 # Feature flags which are not (currently) configurable via Kconfig
 
 #Whether to build debug version
-BUILD_DEBUG_VERSION := 1
+BUILD_DEBUG_VERSION := 0
 
 #Enable this flag to build driver in diag version
 BUILD_DIAG_VERSION := 1
@@ -1129,7 +1129,7 @@ CDEFINES += -DCONFIG_HL_SUPPORT
 endif
 
 #Enable FW logs through ini
-CDEFINES += -DCONFIG_FW_LOGS_BASED_ON_INI
+#CDEFINES += -DCONFIG_FW_LOGS_BASED_ON_INI
 
 #Enable pci read/write config functions
 ifeq ($(CONFIG_ATH_PCI), 1)

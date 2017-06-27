@@ -36,7 +36,7 @@
 #include "vos_types.h"
 #include "wlan_hdd_trace.h"
 #include "wlan_hdd_main.h"
-
+#ifdef BUILD_DEBUG_VERSION
 static tANI_U8 *hddTraceGetEventString(tANI_U32 code)
 {
 	switch (code) {
@@ -104,7 +104,7 @@ static tANI_U8 *hddTraceGetEventString(tANI_U32 code)
 		break;
 	}
 }
-
+#endif
 void hddTraceDump(void *pMac, tpvosTraceRecord pRecord, tANI_U16 recIndex)
 {
 	hddLog(LOGE, "%04d    %012llu  S%d    %-14s  %-30s(0x%x) ",

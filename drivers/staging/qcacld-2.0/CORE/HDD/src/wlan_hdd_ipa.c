@@ -345,7 +345,7 @@ struct ipa_uc_pending_event {
 	uint8_t sta_id;
 	uint8_t mac_addr[VOS_MAC_ADDR_SIZE];
 };
-
+#ifdef BUILD_DEBUG_VERSION
 static const char *op_string[] = {
 	"TX_SUSPEND",
 	"TX_RESUME",
@@ -353,6 +353,7 @@ static const char *op_string[] = {
 	"RX_RESUME",
 	"STATS",
 };
+#endif
 #endif /* IPA_UC_OFFLOAD */
 
 struct hdd_ipa_priv {
