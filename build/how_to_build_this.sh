@@ -54,7 +54,7 @@ export ARCH=arm
 export KBUILD_OUTPUT=./build/temp
 
 echo -e "\nIn $rom - Clean build?\n empty = Yes\n"
-read -r clean
+read -r -t 15 clean
 echo -e "\nYou choose: $clean"
 
 if [ -z "$clean" ]; then
