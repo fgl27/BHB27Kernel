@@ -1,0 +1,5 @@
+# Disable mobile data by default (only affect first boot once user enable it in settings this is not used anymore)
+ro.com.android.mobiledata=false
+
+# Storage
+ro.sys.sdcardfs=false
