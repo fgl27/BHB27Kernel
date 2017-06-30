@@ -426,6 +426,8 @@ struct stm_response {
 #define RESET                           0x7F
 /* STM401 memory map end */
 
+#define READ_CMDBUFF_SIZE 512
+
 #define LIGHTING_TABLE_SIZE 32
 
 #define STM401_AS_DATA_QUEUE_SIZE       0x20
@@ -460,6 +462,8 @@ struct stm_response {
 #define AOD_QP_ENABLED_VOTE_USER		0x02
 #define AOD_QP_ENABLED_VOTE_MASK		0x03
 
+#define STM401_MAX_GENERIC_DATA		512
+
 #define ESR_SIZE			128
 
 #define STM401_RESET_DELAY		50
@@ -467,10 +471,6 @@ struct stm_response {
 #define I2C_RESPONSE_LENGTH		8
 
 #define STM401_MAXDATA_LENGTH		256
-#define STM401_HEADER_LENGTH		1
-#define STM401_FOOTER_LENGTH		1
-#define STM401_MAX_PACKET_LENGTH	\
-	(STM401_HEADER_LENGTH + STM401_MAXDATA_LENGTH + STM401_FOOTER_LENGTH)
 
 #define STM401_IR_GESTURE_CNT      8
 #define STM401_IR_SZ_GESTURE       4
@@ -546,8 +546,8 @@ struct stm_response {
 
 /* The following macros are intended to be called with the stm IRQ handlers */
 /* only and refer to local variables in those functions. */
-#define STM16_TO_HOST(x, buf) ((short) be16_to_cpu(*((u16 *) (buf+(x)))))
-#define STM32_TO_HOST(x, buf) ((short) be32_to_cpu(*((u32 *) (buf+(x)))))
+#define STM16_TO_HOST(x) ((int16_t) be16_to_cpu(*((u16 *) (stm401_readbuff+(x)))))
+#define STM32_TO_HOST(x) ((int32_t) be32_to_cpu(*((u32 *) (stm401_readbuff+(x)))))
 
 #define STM401_HALL_SOUTH 1
 #define STM401_HALL_NORTH 2
@@ -731,22 +731,14 @@ int stm401_ms_data_buffer_write(struct stm401_data *ps_stm401,
 int stm401_ms_data_buffer_read(struct stm401_data *ps_stm401,
 	struct stm401_moto_sensor_data *buff);
 
-int stm401_i2c_write_read_no_reset(
-	struct stm401_data *ps_stm401,
-	u8 *writebuf,
-	u8 *readbuf,
-	int writelen,
-	int readlen);
+int stm401_i2c_write_read_no_reset(struct stm401_data *ps_stm401,
+	u8 *buf, int writelen, int readlen);
 int stm401_i2c_read_no_reset(struct stm401_data *ps_stm401,
 	u8 *buf, int len);
 int stm401_i2c_write_no_reset(struct stm401_data *ps_stm401,
 	u8 *buf, int len);
-int stm401_i2c_write_read(
-	struct stm401_data *ps_stm401,
-	u8 *writebuf,
-	u8 *readbuff,
-	int writelen,
-	int readlen);
+int stm401_i2c_write_read(struct stm401_data *ps_stm401, u8 *buf,
+	int writelen, int readlen);
 int stm401_i2c_read(struct stm401_data *ps_stm401, u8 *buf, int len);
 int stm401_i2c_write(struct stm401_data *ps_stm401, u8 *buf, int len);
 int stm401_enable(struct stm401_data *ps_stm401);
@@ -802,6 +794,9 @@ extern unsigned short stm401_g_control_reg_restore;
 extern unsigned char stm401_g_ir_config_reg[STM401_IR_CONFIG_REG_SIZE];
 extern bool stm401_g_ir_config_reg_restore;
 extern bool stm401_g_booted;
+
+extern unsigned char stm401_cmdbuff[];
+extern unsigned char stm401_readbuff[];
 
 extern unsigned short stm401_i2c_retry_delay;
 

@@ -156,25 +156,19 @@ int stm401_display_handle_quickpeek_locked(struct stm401_data *ps_stm401,
 	u8 aod_qp_reason;
 	u8 aod_qp_panel_state;
 	struct stm401_quickpeek_message *qp_message = NULL;
-	unsigned char cmdbuff[1];
-	unsigned char readbuff[STM401_MAXDATA_LENGTH];
 
 	dev_dbg(&ps_stm401->client->dev, "%s\n", __func__);
 
-	cmdbuff[0] = STM401_STATUS_REG;
-	if (stm401_i2c_write_read(
-		ps_stm401,
-		cmdbuff,
-		readbuff,
-		1, 2)
+	stm401_cmdbuff[0] = STM401_STATUS_REG;
+	if (stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 2)
 		< 0) {
 		dev_err(&ps_stm401->client->dev,
 			"Get status reg failed\n");
 		goto error;
 	}
 
-	aod_qp_panel_state = readbuff[0] & 0x3;
-	aod_qp_reason = (readbuff[1] >> 4) & 0xf;
+	aod_qp_panel_state = stm401_readbuff[0] & 0x3;
+	aod_qp_reason = (stm401_readbuff[1] >> 4) & 0xf;
 
 	qp_message = kzalloc(sizeof(*qp_message), GFP_KERNEL);
 	if (!qp_message) {
@@ -196,21 +190,18 @@ int stm401_display_handle_quickpeek_locked(struct stm401_data *ps_stm401,
 			"Received peek complete command\n");
 		break;
 	case AOD_WAKEUP_REASON_QP_DRAW:
-		cmdbuff[0] = STM401_PEEKDATA_REG;
-		if (stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
+		stm401_cmdbuff[0] = STM401_PEEKDATA_REG;
+		if (stm401_i2c_write_read(ps_stm401, stm401_cmdbuff,
 			1, 5) < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Reading peek draw data from STM failed\n");
 			goto error;
 		}
-		qp_message->buffer_id = readbuff[0] & 0x3f;
-		qp_message->x1 = readbuff[1] |
-			readbuff[2] << 8;
-		qp_message->y1 = readbuff[3] |
-			readbuff[4] << 8;
+		qp_message->buffer_id = stm401_readbuff[0] & 0x3f;
+		qp_message->x1 = stm401_readbuff[1] |
+			stm401_readbuff[2] << 8;
+		qp_message->y1 = stm401_readbuff[3] |
+			stm401_readbuff[4] << 8;
 
 		dev_dbg(&ps_stm401->client->dev,
 			"Received peek draw command for buffer: %d (coord: %d, %d)\n",
@@ -218,23 +209,21 @@ int stm401_display_handle_quickpeek_locked(struct stm401_data *ps_stm401,
 			qp_message->x1, qp_message->y1);
 		break;
 	case AOD_WAKEUP_REASON_QP_ERASE:
-		cmdbuff[0] = STM401_PEEKDATA_REG;
-		if (stm401_i2c_write_read(ps_stm401,
-			cmdbuff,
-			readbuff,
+		stm401_cmdbuff[0] = STM401_PEEKDATA_REG;
+		if (stm401_i2c_write_read(ps_stm401, stm401_cmdbuff,
 			1, 9) < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Reading peek erase data from STM failed\n");
 			goto error;
 		}
-		qp_message->x1 = readbuff[1] |
-			readbuff[2] << 8;
-		qp_message->y1 = readbuff[3] |
-			readbuff[4] << 8;
-		qp_message->x2 = readbuff[5] |
-			readbuff[6] << 8;
-		qp_message->y2 = readbuff[7] |
-			readbuff[8] << 8;
+		qp_message->x1 = stm401_readbuff[1] |
+			stm401_readbuff[2] << 8;
+		qp_message->y1 = stm401_readbuff[3] |
+			stm401_readbuff[4] << 8;
+		qp_message->x2 = stm401_readbuff[5] |
+			stm401_readbuff[6] << 8;
+		qp_message->y2 = stm401_readbuff[7] |
+			stm401_readbuff[8] << 8;
 
 		dev_dbg(&ps_stm401->client->dev,
 			"Received peek erase command: (%d, %d) -> (%d, %d)\n",
@@ -508,8 +497,6 @@ loop:
 static int stm401_takeback_locked(struct stm401_data *ps_stm401)
 {
 	int count = 0;
-	unsigned char cmdbuff[2];
-	unsigned char readbuff[STM401_MAXDATA_LENGTH];
 
 	dev_dbg(&stm401_misc_data->client->dev, "%s\n", __func__);
 	stm401_wake(ps_stm401);
@@ -518,27 +505,24 @@ static int stm401_takeback_locked(struct stm401_data *ps_stm401)
 		stm401_quickpeek_reset_locked(ps_stm401, true);
 
 		/* New I2C Implementation */
-		cmdbuff[0] = STM401_PEEKSTATUS_REG;
-		cmdbuff[1] = 0x00;
-		if (stm401_i2c_write(ps_stm401, cmdbuff, 2) < 0) {
+		stm401_cmdbuff[0] = STM401_PEEKSTATUS_REG;
+		stm401_cmdbuff[1] = 0x00;
+		if (stm401_i2c_write(ps_stm401, stm401_cmdbuff, 2) < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Write peek status reg failed\n");
 			goto EXIT;
 		}
 
 		do {
-			cmdbuff[0] = STM401_STATUS_REG;
-			if (stm401_i2c_write_read(
-				ps_stm401,
-				cmdbuff,
-				readbuff,
-				1, 1) < 0) {
+			stm401_cmdbuff[0] = STM401_STATUS_REG;
+			if (stm401_i2c_write_read(ps_stm401,
+					stm401_cmdbuff, 1, 1) < 0) {
 				dev_err(&ps_stm401->client->dev,
 					"Get status reg failed\n");
 				goto EXIT;
 			}
 
-			if (!(readbuff[0] & STM401_BUSY_STATUS_MASK))
+			if (!(stm401_readbuff[0] & STM401_BUSY_STATUS_MASK))
 				break;
 
 			usleep_range(STM401_BUSY_SLEEP_USEC,
@@ -559,16 +543,15 @@ EXIT:
 static int stm401_handover_locked(struct stm401_data *ps_stm401)
 {
 	int ret = 0;
-	unsigned char cmdbuff[2];
 
 	dev_dbg(&stm401_misc_data->client->dev, "%s\n", __func__);
 	stm401_wake(ps_stm401);
 
 	if (ps_stm401->mode == NORMALMODE) {
 		/* New I2C Implementation */
-		cmdbuff[0] = STM401_PEEKSTATUS_REG;
-		cmdbuff[1] = 0x01;
-		if (stm401_i2c_write(ps_stm401, cmdbuff, 2) < 0) {
+		stm401_cmdbuff[0] = STM401_PEEKSTATUS_REG;
+		stm401_cmdbuff[1] = 0x01;
+		if (stm401_i2c_write(ps_stm401, stm401_cmdbuff, 2) < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Write peek status reg failed\n");
 			ret = -EIO;
@@ -645,17 +628,10 @@ void stm401_store_vote_aod_enabled_locked(struct stm401_data *ps_stm401,
 unsigned short stm401_get_interrupt_status(struct stm401_data *ps_stm401,
 	unsigned char reg, int *err)
 {
-	unsigned char cmdbuff[1];
-	unsigned char readbuff[2];
-
 	stm401_wake(ps_stm401);
 
-	cmdbuff[0] = reg;
-	*err = stm401_i2c_write_read(
-		ps_stm401,
-		cmdbuff,
-		readbuff,
-		1, 2);
+	stm401_cmdbuff[0] = reg;
+	*err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 2);
 	if (*err < 0) {
 		dev_err(&ps_stm401->client->dev, "Reading from STM failed\n");
 		stm401_sleep(ps_stm401);
@@ -663,7 +639,7 @@ unsigned short stm401_get_interrupt_status(struct stm401_data *ps_stm401,
 	}
 
 	stm401_sleep(ps_stm401);
-	return (readbuff[1] << 8) | readbuff[0];
+	return (stm401_readbuff[1] << 8) | stm401_readbuff[0];
 }
 
 /* WARNING: This code is extrememly prone to race conditions. Be very careful

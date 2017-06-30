@@ -64,8 +64,6 @@ void stm401_irq_work_func(struct work_struct *work)
 	u32 irq_status;
 	struct stm401_data *ps_stm401 = container_of(work,
 			struct stm401_data, irq_work);
-	unsigned char cmdbuff[STM401_MAXDATA_LENGTH];
-	unsigned char readbuff[STM401_MAXDATA_LENGTH];
 
 	dev_dbg(&ps_stm401->client->dev, "stm401_irq_work_func\n");
 	mutex_lock(&ps_stm401->lock);
@@ -79,29 +77,21 @@ void stm401_irq_work_func(struct work_struct *work)
 		goto EXIT;
 
 	/* read interrupt mask register */
-	cmdbuff[0] = INTERRUPT_STATUS;
-	err = stm401_i2c_write_read(
-		ps_stm401,
-		cmdbuff,
-		readbuff,
-		1, 3);
+	stm401_cmdbuff[0] = INTERRUPT_STATUS;
+	err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 3);
 	if (err < 0) {
 		dev_err(&ps_stm401->client->dev,
 			"Reading from stm401 failed\n");
 		goto EXIT;
 	}
-	irq_status = (readbuff[IRQ_NOWAKE_HI] << 16) |
-		(readbuff[IRQ_NOWAKE_MED] << 8) |
-		readbuff[IRQ_NOWAKE_LO];
+	irq_status = (stm401_readbuff[IRQ_NOWAKE_HI] << 16) |
+		(stm401_readbuff[IRQ_NOWAKE_MED] << 8) |
+		stm401_readbuff[IRQ_NOWAKE_LO];
 
 	if (irq_status & M_ACCEL) {
 		/* read accelerometer values from STM401 */
-		cmdbuff[0] = ACCEL_X;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1, 6);
+		stm401_cmdbuff[0] = ACCEL_X;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 6);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Reading Accel from stm401 failed\n");
@@ -109,13 +99,12 @@ void stm401_irq_work_func(struct work_struct *work)
 		}
 
 		stm401_as_data_buffer_write(ps_stm401, DT_ACCEL,
-			readbuff, 6, 0);
+			stm401_readbuff, 6, 0);
 
 		dev_dbg(&ps_stm401->client->dev,
 			"Sending acc(x,y,z)values:x=%d,y=%d,z=%d\n",
-			STM16_TO_HOST(ACCEL_RD_X, readbuff),
-			STM16_TO_HOST(ACCEL_RD_Y, readbuff),
-			STM16_TO_HOST(ACCEL_RD_Z, readbuff));
+			STM16_TO_HOST(ACCEL_RD_X), STM16_TO_HOST(ACCEL_RD_Y),
+			STM16_TO_HOST(ACCEL_RD_Z));
 	}
 	if (irq_status & M_LIN_ACCEL) {
 		dev_err(&ps_stm401->client->dev,
@@ -123,12 +112,8 @@ void stm401_irq_work_func(struct work_struct *work)
 			irq_status);
 
 		/* read linear accelerometer values from STM401 */
-		cmdbuff[0] = LIN_ACCEL_X;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1, 6);
+		stm401_cmdbuff[0] = LIN_ACCEL_X;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 6);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Reading Linear Accel from stm401 failed\n");
@@ -136,99 +121,77 @@ void stm401_irq_work_func(struct work_struct *work)
 		}
 
 		stm401_as_data_buffer_write(ps_stm401, DT_LIN_ACCEL,
-					readbuff, 6, 0);
+					stm401_readbuff, 6, 0);
 
 		dev_dbg(&ps_stm401->client->dev,
 			"Sending lin_acc(x,y,z)values:x=%d,y=%d,z=%d\n",
-			STM16_TO_HOST(ACCEL_RD_X, readbuff),
-			STM16_TO_HOST(ACCEL_RD_Y, readbuff),
-			STM16_TO_HOST(ACCEL_RD_Z, readbuff));
+			STM16_TO_HOST(ACCEL_RD_X), STM16_TO_HOST(ACCEL_RD_Y),
+			STM16_TO_HOST(ACCEL_RD_Z));
 	}
 	if (irq_status & M_ECOMPASS) {
 		unsigned char status;
 		/*Read orientation values */
-		cmdbuff[0] = MAG_HX;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1, 13);
+		stm401_cmdbuff[0] = MAG_HX;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 13);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev, "Reading Ecompass failed\n");
 			goto EXIT;
 		}
-		status = readbuff[COMPASS_STATUS];
+		status = stm401_readbuff[COMPASS_STATUS];
 		stm401_as_data_buffer_write(ps_stm401, DT_MAG,
-			readbuff, 6, status);
+			stm401_readbuff, 6, status);
 
 		dev_dbg(&ps_stm401->client->dev,
 			"Sending mag(x,y,z)values:x=%d,y=%d,z=%d\n",
-			STM16_TO_HOST(MAG_X, readbuff),
-			STM16_TO_HOST(MAG_Y, readbuff),
-			STM16_TO_HOST(MAG_Z, readbuff));
+			STM16_TO_HOST(MAG_X), STM16_TO_HOST(MAG_Y),
+			STM16_TO_HOST(MAG_Z));
 
 		stm401_as_data_buffer_write(ps_stm401, DT_ORIENT,
-					    readbuff + 6, 6, status);
+					    stm401_readbuff + 6, 6, status);
 
 		dev_dbg(&ps_stm401->client->dev,
 			"Sending orient(x,y,z)values:x=%d,y=%d,z=%d\n",
-			STM16_TO_HOST(ORIENT_X, readbuff),
-			STM16_TO_HOST(ORIENT_Y, readbuff),
-			STM16_TO_HOST(ORIENT_Z, readbuff));
+			STM16_TO_HOST(ORIENT_X), STM16_TO_HOST(ORIENT_Y),
+			STM16_TO_HOST(ORIENT_Z));
 	}
 	if (irq_status & M_GYRO) {
-		cmdbuff[0] = GYRO_X;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1, 6);
+		stm401_cmdbuff[0] = GYRO_X;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 6);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Reading Gyroscope failed\n");
 			goto EXIT;
 		}
 		stm401_as_data_buffer_write(ps_stm401, DT_GYRO,
-			readbuff, 6, 0);
+			stm401_readbuff, 6, 0);
 
 		dev_dbg(&ps_stm401->client->dev,
 			"Sending gyro(x,y,z)values:x=%d,y=%d,z=%d\n",
-			STM16_TO_HOST(GYRO_RD_X, readbuff),
-			STM16_TO_HOST(GYRO_RD_Y, readbuff),
-			STM16_TO_HOST(GYRO_RD_Z, readbuff));
+			STM16_TO_HOST(GYRO_RD_X), STM16_TO_HOST(GYRO_RD_Y),
+			STM16_TO_HOST(GYRO_RD_Z));
 	}
 	/*MODIFIED UNCALIBRATED GYRO*/
 	if (irq_status & M_UNCALIB_GYRO) {
-		cmdbuff[0] = UNCALIB_GYRO_X;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1, 12);
+		stm401_cmdbuff[0] = UNCALIB_GYRO_X;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 12);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Reading Gyroscope failed\n");
 			goto EXIT;
 		}
 		stm401_as_data_buffer_write(ps_stm401, DT_UNCALIB_GYRO,
-			readbuff, 12, 0);
+			stm401_readbuff, 12, 0);
 
 		dev_dbg(&ps_stm401->client->dev,
 			"Sending Gyro uncalib(x,y,z)values:%d,%d,%d;%d,%d,%d\n",
-			STM16_TO_HOST(GYRO_RD_X, readbuff),
-			STM16_TO_HOST(GYRO_RD_Y, readbuff),
-			STM16_TO_HOST(GYRO_RD_Z, readbuff),
-			STM16_TO_HOST(GYRO_UNCALIB_X, readbuff),
-			STM16_TO_HOST(GYRO_UNCALIB_Y, readbuff),
-			STM16_TO_HOST(GYRO_UNCALIB_Z, readbuff));
+			STM16_TO_HOST(GYRO_RD_X), STM16_TO_HOST(GYRO_RD_Y),
+			STM16_TO_HOST(GYRO_RD_Z), STM16_TO_HOST(GYRO_UNCALIB_X),
+			STM16_TO_HOST(GYRO_UNCALIB_Y),
+			STM16_TO_HOST(GYRO_UNCALIB_Z));
 	}
 	if (irq_status & M_UNCALIB_MAG) {
-		cmdbuff[0] = UNCALIB_MAG_X;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1, 12);
+		stm401_cmdbuff[0] = UNCALIB_MAG_X;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 12);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Reading Gyroscope failed\n");
@@ -236,24 +199,18 @@ void stm401_irq_work_func(struct work_struct *work)
 		}
 
 		stm401_as_data_buffer_write(ps_stm401, DT_UNCALIB_MAG,
-			readbuff, 12, 0);
+			stm401_readbuff, 12, 0);
 
 		dev_dbg(&ps_stm401->client->dev,
 			"Sending Gyro uncalib(x,y,z)values:%d,%d,%d;%d,%d,%d\n",
-			STM16_TO_HOST(MAG_X, readbuff),
-			STM16_TO_HOST(MAG_Y, readbuff),
-			STM16_TO_HOST(MAG_Z, readbuff),
-			STM16_TO_HOST(MAG_UNCALIB_X, readbuff),
-			STM16_TO_HOST(MAG_UNCALIB_Y, readbuff),
-			STM16_TO_HOST(MAG_UNCALIB_Z, readbuff));
+			STM16_TO_HOST(MAG_X), STM16_TO_HOST(MAG_Y),
+			STM16_TO_HOST(MAG_Z), STM16_TO_HOST(MAG_UNCALIB_X),
+			STM16_TO_HOST(MAG_UNCALIB_Y),
+			STM16_TO_HOST(MAG_UNCALIB_Z));
 	}
 	if (irq_status & (M_QUAT_6AXIS | M_QUAT_9AXIS)) {
-		cmdbuff[0] = QUATERNION_DATA;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1, 16);
+		stm401_cmdbuff[0] = QUATERNION_DATA;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 16);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Reading quaternions failed\n");
@@ -264,7 +221,7 @@ void stm401_irq_work_func(struct work_struct *work)
 			stm401_as_data_buffer_write(
 				ps_stm401,
 				DT_QUAT_6AXIS,
-				readbuff,
+				stm401_readbuff,
 				8,
 				0
 			);
@@ -272,10 +229,10 @@ void stm401_irq_work_func(struct work_struct *work)
 			dev_dbg(
 				&ps_stm401->client->dev,
 				"Sending 6-axis quat values:%d,%d,%d,%d\n",
-				STM16_TO_HOST(QUAT_6AXIS_A, readbuff),
-				STM16_TO_HOST(QUAT_6AXIS_B, readbuff),
-				STM16_TO_HOST(QUAT_6AXIS_C, readbuff),
-				STM16_TO_HOST(QUAT_6AXIS_W, readbuff)
+				STM16_TO_HOST(QUAT_6AXIS_A),
+				STM16_TO_HOST(QUAT_6AXIS_B),
+				STM16_TO_HOST(QUAT_6AXIS_C),
+				STM16_TO_HOST(QUAT_6AXIS_W)
 			);
 		}
 
@@ -283,7 +240,7 @@ void stm401_irq_work_func(struct work_struct *work)
 			stm401_as_data_buffer_write(
 				ps_stm401,
 				DT_QUAT_9AXIS,
-				readbuff+8,
+				stm401_readbuff+8,
 				8,
 				0
 			);
@@ -291,94 +248,75 @@ void stm401_irq_work_func(struct work_struct *work)
 			dev_dbg(
 				&ps_stm401->client->dev,
 				"Sending 9-axis quat values:%d,%d,%d,%d\n",
-				STM16_TO_HOST(QUAT_9AXIS_A, readbuff),
-				STM16_TO_HOST(QUAT_9AXIS_B, readbuff),
-				STM16_TO_HOST(QUAT_9AXIS_C, readbuff),
-				STM16_TO_HOST(QUAT_9AXIS_W, readbuff)
+				STM16_TO_HOST(QUAT_9AXIS_A),
+				STM16_TO_HOST(QUAT_9AXIS_B),
+				STM16_TO_HOST(QUAT_9AXIS_C),
+				STM16_TO_HOST(QUAT_9AXIS_W)
 			);
 		}
 	}
 	if (irq_status & M_STEP_COUNTER) {
-		cmdbuff[0] = STEP_COUNTER;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1, 8);
+		stm401_cmdbuff[0] = STEP_COUNTER;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 8);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Reading step counter failed\n");
 			goto EXIT;
 		}
 		stm401_as_data_buffer_write(ps_stm401, DT_STEP_COUNTER,
-			readbuff, 8, 0);
+			stm401_readbuff, 8, 0);
 
 		dev_dbg(&ps_stm401->client->dev,
 			"Sending step counter %X %X %X %X\n",
-			STM16_TO_HOST(STEP64_DATA, readbuff),
-			STM16_TO_HOST(STEP32_DATA, readbuff),
-			STM16_TO_HOST(STEP16_DATA, readbuff),
-			STM16_TO_HOST(STEP8_DATA, readbuff));
+			STM16_TO_HOST(STEP64_DATA), STM16_TO_HOST(STEP32_DATA),
+			STM16_TO_HOST(STEP16_DATA), STM16_TO_HOST(STEP8_DATA));
 	}
 	if (irq_status & M_STEP_DETECTOR) {
 		unsigned short detected_steps = 0;
-		cmdbuff[0] = STEP_DETECTOR;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1, 1);
+		stm401_cmdbuff[0] = STEP_DETECTOR;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 1);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Reading step detector  failed\n");
 			goto EXIT;
 		}
-		detected_steps = readbuff[STEP_DETECT];
+		detected_steps = stm401_readbuff[STEP_DETECT];
 		while (detected_steps-- != 0) {
 			stm401_as_data_buffer_write(ps_stm401, DT_STEP_DETECTOR,
-				readbuff, 1, 0);
+				stm401_readbuff, 1, 0);
 
 			dev_dbg(&ps_stm401->client->dev,
 				"Sending step detector\n");
 		}
 	}
 	if (irq_status & M_ALS) {
-		cmdbuff[0] = ALS_LUX;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1, 2);
+		stm401_cmdbuff[0] = ALS_LUX;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 2);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Reading ALS from stm401 failed\n");
 			goto EXIT;
 		}
 		stm401_as_data_buffer_write(ps_stm401, DT_ALS,
-			readbuff, 2, 0);
+			stm401_readbuff, 2, 0);
 
 		dev_dbg(&ps_stm401->client->dev, "Sending ALS %d\n",
-			STM16_TO_HOST(ALS_VALUE, readbuff));
+			STM16_TO_HOST(ALS_VALUE));
 	}
 	if (irq_status & M_TEMPERATURE) {
 		/*Read temperature value */
-		cmdbuff[0] = TEMPERATURE_DATA;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1, 2);
+		stm401_cmdbuff[0] = TEMPERATURE_DATA;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 2);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Reading Temperature failed\n");
 			goto EXIT;
 		}
 		stm401_as_data_buffer_write(ps_stm401, DT_TEMP,
-					    readbuff, 2, 0);
+					    stm401_readbuff, 2, 0);
 
 		dev_dbg(&ps_stm401->client->dev,
-			"Sending temp(x)value:%d\n",
-			STM16_TO_HOST(TEMP_VALUE, readbuff));
+			"Sending temp(x)value:%d\n", STM16_TO_HOST(TEMP_VALUE));
 	}
 	if (irq_status & M_PRESSURE) {
 		dev_err(&ps_stm401->client->dev,
@@ -386,22 +324,18 @@ void stm401_irq_work_func(struct work_struct *work)
 			irq_status);
 
 		/*Read pressure value */
-		cmdbuff[0] = CURRENT_PRESSURE;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1, 4);
+		stm401_cmdbuff[0] = CURRENT_PRESSURE;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 4);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Reading Pressure failed\n");
 			goto EXIT;
 		}
 		stm401_as_data_buffer_write(ps_stm401, DT_PRESSURE,
-			readbuff, 4, 0);
+			stm401_readbuff, 4, 0);
 
 		dev_dbg(&ps_stm401->client->dev, "Sending pressure %d\n",
-			STM32_TO_HOST(PRESSURE_VALUE, readbuff));
+			STM32_TO_HOST(PRESSURE_VALUE));
 	}
 	if (irq_status & M_GRAVITY) {
 		dev_err(&ps_stm401->client->dev,
@@ -409,12 +343,8 @@ void stm401_irq_work_func(struct work_struct *work)
 			irq_status);
 
 		/* read gravity values from STM401 */
-		cmdbuff[0] = GRAVITY_X;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1, 6);
+		stm401_cmdbuff[0] = GRAVITY_X;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 6);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Reading Gravity from stm401 failed\n");
@@ -422,52 +352,43 @@ void stm401_irq_work_func(struct work_struct *work)
 		}
 
 		stm401_as_data_buffer_write(ps_stm401, DT_GRAVITY,
-			readbuff, 6, 0);
+			stm401_readbuff, 6, 0);
 
 		dev_dbg(&ps_stm401->client->dev,
 			"Sending gravity(x,y,z)values:x=%d,y=%d,z=%d\n",
-			STM16_TO_HOST(GRAV_X, readbuff),
-			STM16_TO_HOST(GRAV_Y, readbuff),
-			STM16_TO_HOST(GRAV_Z, readbuff));
+			STM16_TO_HOST(GRAV_X), STM16_TO_HOST(GRAV_Y),
+			STM16_TO_HOST(GRAV_Z));
 	}
 	if (irq_status & M_DISP_ROTATE) {
 		/*Read Display Rotate value */
-		cmdbuff[0] = DISP_ROTATE_DATA;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1, 1);
+		stm401_cmdbuff[0] = DISP_ROTATE_DATA;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 1);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Reading disp_rotate failed\n");
 			goto EXIT;
 		}
 		stm401_as_data_buffer_write(ps_stm401, DT_DISP_ROTATE,
-			readbuff, 1, 0);
+			stm401_readbuff, 1, 0);
 
 		dev_dbg(&ps_stm401->client->dev,
 			"Sending disp_rotate(x)value: %d\n",
-			readbuff[DISP_VALUE]);
+			stm401_readbuff[DISP_VALUE]);
 	}
 	if (irq_status & M_DISP_BRIGHTNESS) {
-		cmdbuff[0] = DISPLAY_BRIGHTNESS;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1, 1);
+		stm401_cmdbuff[0] = DISPLAY_BRIGHTNESS;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 1);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev,
 				"Reading Display Brightness failed\n");
 			goto EXIT;
 		}
 		stm401_as_data_buffer_write(ps_stm401, DT_DISP_BRIGHT,
-			readbuff, 1, 0);
+			stm401_readbuff, 1, 0);
 
 		dev_dbg(&ps_stm401->client->dev,
 			"Sending Display Brightness %d\n",
-			readbuff[DISP_VALUE]);
+			stm401_readbuff[DISP_VALUE]);
 	}
 	if (irq_status & M_IR_GESTURE) {
 		err = stm401_process_ir_gesture(ps_stm401);
@@ -475,36 +396,28 @@ void stm401_irq_work_func(struct work_struct *work)
 			goto EXIT;
 	}
 	if (irq_status & M_IR_RAW) {
-		cmdbuff[0] = IR_RAW;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1,
+		stm401_cmdbuff[0] = IR_RAW;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1,
 			STM401_IR_SZ_RAW);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev, "Reading IR data failed\n");
 			goto EXIT;
 		}
 		stm401_as_data_buffer_write(ps_stm401, DT_IR_RAW,
-			readbuff, STM401_IR_SZ_RAW, 0);
+			stm401_readbuff, STM401_IR_SZ_RAW, 0);
 		dev_dbg(&ps_stm401->client->dev, "Sending raw IR data\n");
 	}
 	if (irq_status & M_IR_OBJECT) {
-		cmdbuff[0] = IR_STATE;
-		err = stm401_i2c_write_read(
-			ps_stm401,
-			cmdbuff,
-			readbuff,
-			1, 1);
+		stm401_cmdbuff[0] = IR_STATE;
+		err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1, 1);
 		if (err < 0) {
 			dev_err(&ps_stm401->client->dev, "Reading IR object state failed\n");
 			goto EXIT;
 		}
 		stm401_as_data_buffer_write(ps_stm401, DT_IR_OBJECT,
-			readbuff, 1, 0);
+			stm401_readbuff, 1, 0);
 		dev_dbg(&ps_stm401->client->dev, "Sending IR object state: 0x%x\n",
-			readbuff[IR_STATE_STATE]);
+			stm401_readbuff[IR_STATE_STATE]);
 	}
 
 EXIT:
@@ -516,29 +429,23 @@ EXIT:
 int stm401_process_ir_gesture(struct stm401_data *ps_stm401)
 {
 	int i, err;
-	unsigned char cmdbuff[1];
-	unsigned char readbuff[STM401_MAXDATA_LENGTH];
 
-	cmdbuff[0] = IR_GESTURE;
-	err = stm401_i2c_write_read(
-		ps_stm401,
-		cmdbuff,
-		readbuff,
-		1,
-		STM401_IR_SZ_GESTURE * STM401_IR_GESTURE_CNT);
+	stm401_cmdbuff[0] = IR_GESTURE;
+	err = stm401_i2c_write_read(ps_stm401, stm401_cmdbuff, 1,
+				STM401_IR_SZ_GESTURE * STM401_IR_GESTURE_CNT);
 	if (err < 0) {
 		dev_err(&ps_stm401->client->dev, "Reading IR gesture failed\n");
 		return err;
 	}
 	for (i = 0; i < STM401_IR_GESTURE_CNT; i++) {
 		int ofs = i * STM401_IR_SZ_GESTURE;
-		if (readbuff[ofs + IR_GESTURE_EVENT] == 0)
+		if (stm401_readbuff[ofs + IR_GESTURE_EVENT] == 0)
 			continue;
 		stm401_as_data_buffer_write(ps_stm401, DT_IR_GESTURE,
-					readbuff + ofs,
+					stm401_readbuff + ofs,
 					STM401_IR_SZ_GESTURE, 0);
 		dev_dbg(&ps_stm401->client->dev, "Send IR Gesture %d\n",
-			readbuff[ofs + IR_GESTURE_ID]);
+			stm401_readbuff[ofs + IR_GESTURE_ID]);
 	}
 	return 0;
 }
