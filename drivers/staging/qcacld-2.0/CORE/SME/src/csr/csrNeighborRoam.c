@@ -277,9 +277,11 @@ static void csrNeighborRoamTriggerHandoff(tpAniSirGlobal pMac,
         }
         else
         {
+#ifdef BUILD_DEBUG_VERSION
             smsLog(pMac, LOGE, FL("11R Reassoc indication received in unexpected state %s"),
                    macTraceGetNeighbourRoamState(
                    pNeighborRoamInfo->neighborRoamState));
+#endif
             VOS_ASSERT(0);
         }
     }
@@ -299,9 +301,11 @@ static void csrNeighborRoamTriggerHandoff(tpAniSirGlobal pMac,
             }
             else
             {
+#ifdef BUILD_DEBUG_VERSION
                 smsLog(pMac, LOGE, FL("CCX Reassoc indication received in unexpected state %s"),
                        macTraceGetNeighbourRoamState(
                        pNeighborRoamInfo->neighborRoamState));
+#endif
                 VOS_ASSERT(0);
             }
         }
@@ -325,9 +329,11 @@ static void csrNeighborRoamTriggerHandoff(tpAniSirGlobal pMac,
                 }
                 else
                 {
+#ifdef BUILD_DEBUG_VERSION
                     smsLog(pMac, LOGE, FL("LFR Reassoc indication received in unexpected state %s"),
                             macTraceGetNeighbourRoamState(
                             pNeighborRoamInfo->neighborRoamState));
+#endif
                     VOS_ASSERT(0);
                 }
             }
@@ -338,12 +344,14 @@ static void csrNeighborRoamTriggerHandoff(tpAniSirGlobal pMac,
                 {
                     csrNeighborRoamRequestHandoff(pMac, sessionId);
                 }
+#ifdef BUILD_DEBUG_VERSION
                 else
                 {
                     smsLog(pMac, LOGE, FL("Non-11R Reassoc indication received in unexpected state %s or Roaming is diisabled"),
                            macTraceGetNeighbourRoamState(
                            pNeighborRoamInfo->neighborRoamState));
                 }
+#endif
             }
 }
 
@@ -424,10 +432,12 @@ csrNeighborRoamUpdateFastRoamingEnabled(tpAniSirGlobal pMac,
     }
     else
     {
+#ifdef BUILD_DEBUG_VERSION
         NEIGHBOR_ROAM_DEBUG(pMac, LOGE,
                             FL("Unexpected state %s, returning failure"),
                             macTraceGetNeighbourRoamState(
                             pNeighborRoamInfo->neighborRoamState));
+#endif
         vosStatus = VOS_STATUS_E_FAILURE;
     }
     return vosStatus;
@@ -597,9 +607,11 @@ VOS_STATUS csrNeighborRoamSetLookupRssiThreshold(tpAniSirGlobal pMac,
     }
     else
     {
+#ifdef BUILD_DEBUG_VERSION
         NEIGHBOR_ROAM_DEBUG(pMac, LOGE,
                  FL("Unexpected state %s, returning failure"),
                  macTraceGetNeighbourRoamState(pNeighborRoamInfo->neighborRoamState));
+#endif
         vosStatus = VOS_STATUS_E_FAILURE;
     }
     return vosStatus;
@@ -1509,10 +1521,12 @@ eHalStatus csrNeighborRoamPreauthRspHandler(tpAniSirGlobal pMac,
     if ((pNeighborRoamInfo->neighborRoamState != eCSR_NEIGHBOR_ROAM_STATE_PREAUTHENTICATING) &&
         (pNeighborRoamInfo->neighborRoamState != eCSR_NEIGHBOR_ROAM_STATE_REPORT_SCAN))
     {
+#ifdef BUILD_DEBUG_VERSION
         NEIGHBOR_ROAM_DEBUG(pMac, LOGW,
                             FL("Preauth response received in state %s"),
                             macTraceGetNeighbourRoamState(
                             pNeighborRoamInfo->neighborRoamState));
+#endif
                             preauthProcessed = eHAL_STATUS_FAILURE;
         goto DEQ_PREAUTH;
     }
@@ -2662,11 +2676,13 @@ static eHalStatus csrNeighborRoamProcessScanComplete (tpAniSirGlobal pMac,
                 }
                 else
                 {
+#ifdef BUILD_DEBUG_VERSION
                      NEIGHBOR_ROAM_DEBUG(pMac, LOGE,
                                          FL("No candidate found after"
                                             "scanning in state %s .. "),
                                          macTraceGetNeighbourRoamState(
                                          pNeighborRoamInfo->neighborRoamState));
+#endif
                     /* Handle it appropriately */
                     csrNeighborRoamHandleEmptyScanResult(pMac, sessionId);
                 }
@@ -2675,11 +2691,13 @@ static eHalStatus csrNeighborRoamProcessScanComplete (tpAniSirGlobal pMac,
             case eCSR_NEIGHBOR_ROAM_STATE_REPORT_SCAN:
                 if (!tempVal)
                 {
+#ifdef BUILD_DEBUG_VERSION
                     smsLog(pMac, LOGE,
                            FL("No candidate found after scanning"
                             "in state %s .. "),
                            macTraceGetNeighbourRoamState(
                            pNeighborRoamInfo->neighborRoamState));
+#endif
                     /* Stop the timer here as the same timer will be started again in CFG_CHAN_SCAN_STATE */
                     csrNeighborRoamTransitToCFGChanScan(pMac, sessionId);
                 }
@@ -2689,10 +2707,12 @@ static eHalStatus csrNeighborRoamProcessScanComplete (tpAniSirGlobal pMac,
                 // Can come only in INIT state. Where in we are associated, we sent scan and user
                 // in the meantime decides to disassoc, we will be in init state and still received call
                 // back issued. Should not come here in any other state, printing just in case
+#ifdef BUILD_DEBUG_VERSION
                 VOS_TRACE (VOS_MODULE_ID_SME, VOS_TRACE_LEVEL_INFO,
                            FL("State %s"),
                            macTraceGetNeighbourRoamState(
                            pNeighborRoamInfo->neighborRoamState));
+#endif
                 // Lets just exit out silently.
                 return eHAL_STATUS_SUCCESS;
          }
@@ -2863,11 +2883,13 @@ static eHalStatus csrNeighborRoamScanRequestCallback(tHalHandle halHandle,
 #ifdef FEATURE_WLAN_LFR
         if (!csrRoamIsStaMode(pMac, sessionId))
         {
+#ifdef BUILD_DEBUG_VERSION
             smsLog(pMac, LOGE,
                    FL("Ignoring scan request callback on non-infra"
                    "session %d in state %s"),
                    sessionId, macTraceGetNeighbourRoamState(
                    pNeighborRoamInfo->neighborRoamState));
+#endif
             vos_mem_free(pContext);
             return eHAL_STATUS_SUCCESS;
         }
@@ -3391,6 +3413,7 @@ void csrNeighborRoamNeighborScanTimerCallback(void *pv)
                     csrNeighborRoamPerformBgScan(pMac, sessionId);
                     break;
                 default:
+#ifdef BUILD_DEBUG_VERSION
                     smsLog(pMac, LOGE,
                            FL("Neighbor scan callback received in"
                            "state %s, prev state = %s"),
@@ -3398,6 +3421,7 @@ void csrNeighborRoamNeighborScanTimerCallback(void *pv)
                            pNeighborRoamInfo->neighborRoamState),
                            macTraceGetNeighbourRoamState(
                            pNeighborRoamInfo->prevNeighborRoamState));
+#endif
                     break;
             }
             break;
@@ -3839,11 +3863,13 @@ VOS_STATUS csrNeighborRoamCreateChanListFromNeighborReport(tpAniSirGlobal pMac,
      * channels. There is no need to update.*/
     if (numChannels)
     {
+#ifdef BUILD_DEBUG_VERSION
         smsLog(pMac, LOG1,
                FL("IAPP Neighbor list callback received as expected"
                "in state %s."),
                macTraceGetNeighbourRoamState(
                pNeighborRoamInfo->neighborRoamState));
+#endif
                pNeighborRoamInfo->roamChannelInfo.IAPPNeighborListReceived = eANI_BOOLEAN_TRUE;
 #ifdef WLAN_FEATURE_ROAM_SCAN_OFFLOAD
         if (csrRoamIsRoamOffloadScanEnabled(pMac))
@@ -3960,11 +3986,13 @@ void csrNeighborRoamRRMNeighborReportResult(void *context, VOS_STATUS vosStatus)
             }
             break;
         default:
+#ifdef BUILD_DEBUG_VERSION
             smsLog(pMac, LOGE,
                    FL("Neighbor result callback not expected in"
                    "state %s, Ignoring.."),
                    macTraceGetNeighbourRoamState(
                    pNeighborRoamInfo->neighborRoamState));
+#endif
             break;
     }
     vos_mem_free(pUsrCtx);
@@ -4691,10 +4719,12 @@ VOS_STATUS  csrNeighborRoamNeighborLookupDownEvent(tpAniSirGlobal pMac,
             }
             break;
         default:
+#ifdef BUILD_DEBUG_VERSION
             smsLog(pMac, LOGE, FL("DOWN event received in invalid"
                    "state %s ..Ignoring..."),
                    macTraceGetNeighbourRoamState(
                    pNeighborRoamInfo->neighborRoamState));
+#endif
             break;
 
     }
@@ -4986,10 +5016,12 @@ eHalStatus csrNeighborRoamIndicateDisconnect(tpAniSirGlobal pMac,
 #endif
             break;
         default:
+#ifdef BUILD_DEBUG_VERSION
             NEIGHBOR_ROAM_DEBUG(pMac, LOGW, FL("Received disconnect event"
                                 "in state %s "),
                                  macTraceGetNeighbourRoamState(
                                  pNeighborRoamInfo->neighborRoamState));
+#endif
             NEIGHBOR_ROAM_DEBUG(pMac, LOGW, FL("Transitioning to INIT state"));
             CSR_NEIGHBOR_ROAM_STATE_TRANSITION(eCSR_NEIGHBOR_ROAM_STATE_INIT,
                                                sessionId)
@@ -5046,13 +5078,13 @@ eHalStatus csrNeighborRoamIndicateConnect(tpAniSirGlobal pMac,
     {
         return eHAL_STATUS_FAILURE;
     }
-
+#ifdef BUILD_DEBUG_VERSION
      smsLog(pMac, LOG2,
             FL("Connect indication received with session id %d"
             "in state %s"),
             sessionId, macTraceGetNeighbourRoamState(
             pNeighborRoamInfo->neighborRoamState));
-
+#endif
 
     // Bail out if this is NOT a STA persona
     if (pMac->roam.roamSession[sessionId].pCurRoamProfile->csrPersona != VOS_STA_MODE)
@@ -5302,11 +5334,13 @@ eHalStatus csrNeighborRoamIndicateConnect(tpAniSirGlobal pMac,
 #endif
             break;
         default:
+#ifdef BUILD_DEBUG_VERSION
             smsLog(pMac, LOGE,
                    FL("Connect event received in invalid state %s"
                    "..Ignoring..."),
                    macTraceGetNeighbourRoamState(
                    pNeighborRoamInfo->neighborRoamState));
+#endif
             break;
     }
     return status;
@@ -5665,10 +5699,12 @@ void csrNeighborRoamRequestHandoff(tpAniSirGlobal pMac, tANI_U8 sessionId)
 
     if (pNeighborRoamInfo->neighborRoamState !=
                                 eCSR_NEIGHBOR_ROAM_STATE_PREAUTH_DONE) {
+#ifdef BUILD_DEBUG_VERSION
         smsLog(pMac, LOGE,
                FL("Roam requested when Neighbor roam is in %s state"),
                macTraceGetNeighbourRoamState(
                pNeighborRoamInfo->neighborRoamState));
+#endif
         return;
     }
 
@@ -5977,7 +6013,7 @@ eHalStatus csrNeighborRoamCandidateFoundIndHdlr(tpAniSirGlobal pMac, void* pMsg)
          * purge non-P2P results from the past */
         csrScanFlushSelectiveResult(pMac, VOS_FALSE);
         /* Once it gets the candidates found indication from PE, will issue
-         * a scan req to PE with “freshScan” in scanreq structure set
+         * a scan req to PE with \93freshScan\94 in scanreq structure set
          * as follows: 0x42 - Return & purge LFR scan results
          */
         status = csrScanRequestLfrResult(pMac, sessionId,

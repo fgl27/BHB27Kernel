@@ -7653,7 +7653,9 @@ static int iw_get_char_setnone(struct net_device *dev, struct iw_request_info *i
         {
             int buf = 0, len = 0;
             int adapter_num = 0;
+#ifdef BUILD_DEBUG_VERSION
             int count = 0, check = 1;
+#endif
 
             tANI_U16 tlState;
             tHalHandle hHal = NULL;
@@ -7718,7 +7720,7 @@ static int iw_get_char_setnone(struct net_device *dev, struct iw_request_info *i
                 pHddStaCtx = WLAN_HDD_GET_STATION_CTX_PTR(useAdapter);
 
                 tlState = smeGetTLSTAState(hHal, pHddStaCtx->conn_info.staId[0]);
-
+#ifdef BUILD_DEBUG_VERSION
                 buf = scnprintf(extra + len, WE_MAX_STR_LEN - len,
                         "\n HDD Conn State - %s "
                         "\n \n SME State:"
@@ -7741,9 +7743,10 @@ static int iw_get_char_setnone(struct net_device *dev, struct iw_request_info *i
                         macTraceGetTLState(tlState)
                         );
                 len += buf;
+#endif
                 adapter_num++;
             }
-
+#ifdef BUILD_DEBUG_VERSION
             if (hHal) {
                 /* Printing Lim State starting with global lim states */
                 buf = scnprintf(extra + len, WE_MAX_STR_LEN - len,
@@ -7777,6 +7780,7 @@ static int iw_get_char_setnone(struct net_device *dev, struct iw_request_info *i
                     count++;
                 }
             }
+#endif
 
             wrqu->data.length = strlen(extra)+1;
             break;
@@ -10352,7 +10356,9 @@ int iw_set_two_ints_getnone(struct net_device *dev,
     int *value = (int *)extra;
     int sub_cmd = value[0];
     int ret = 0;
+#ifdef BUILD_DEBUG_VERSION
     hdd_context_t *hdd_ctx = WLAN_HDD_GET_CTX(pAdapter);
+#endif
 
     if ((WLAN_HDD_GET_CTX(pAdapter))->isLogpInProgress) {
         VOS_TRACE(VOS_MODULE_ID_HDD, VOS_TRACE_LEVEL_FATAL,

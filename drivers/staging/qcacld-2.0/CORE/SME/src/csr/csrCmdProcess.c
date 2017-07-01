@@ -52,14 +52,14 @@ eHalStatus csrMsgProcessor( tpAniSirGlobal pMac,  void *pMsgBuf )
     tSirMbMsg *pMsg = (tSirMbMsg *)pMsgBuf;
     tCsrRoamSession *pSession;
 #endif
-
+#ifdef BUILD_DEBUG_VERSION
     smsLog(pMac, LOG2, FL("Message %d[0x%04X] received in curState %s"
            " and substate %s sessionId (%d)"),
            pSmeRsp->messageType, pSmeRsp->messageType,
            macTraceGetcsrRoamState(pMac->roam.curState[pSmeRsp->sessionId]),
            macTraceGetcsrRoamSubState(
            pMac->roam.curSubState[pSmeRsp->sessionId]), pSmeRsp->sessionId);
-
+#endif
 #ifdef FEATURE_WLAN_SCAN_PNO
     /*
      * PNO scan responses have to be handled irrespective of CSR roam state.

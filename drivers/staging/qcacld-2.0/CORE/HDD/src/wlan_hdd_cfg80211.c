@@ -834,14 +834,6 @@ wlan_hdd_pno_config_policy[QCA_WLAN_VENDOR_ATTR_PNO_MAX + 1] = {
 	},
 };
 
-static const struct nla_policy
-wlan_hdd_extscan_results_policy[QCA_WLAN_VENDOR_ATTR_EXTSCAN_RESULTS_MAX + 1] =
-{
-    [QCA_WLAN_VENDOR_ATTR_EXTSCAN_RESULTS_SCAN_RESULT_BEACON_PERIOD] = { .type = NLA_U16 },
-    [QCA_WLAN_VENDOR_ATTR_EXTSCAN_RESULTS_SCAN_RESULT_CAPABILITY] = { .type = NLA_U16 },
-};
-
-
 #endif /* FEATURE_WLAN_EXTSCAN */
 
 #if defined(FEATURE_WLAN_CH_AVOID) || defined(FEATURE_WLAN_FORCE_SAP_SCC)
@@ -6339,16 +6331,6 @@ static const struct nla_policy
 wlan_hdd_tdls_config_disable_policy[QCA_WLAN_VENDOR_ATTR_TDLS_DISABLE_MAX +1] =
 {
     [QCA_WLAN_VENDOR_ATTR_TDLS_DISABLE_MAC_ADDR] = {.type = NLA_UNSPEC },
-
-};
-
-static const struct nla_policy
-wlan_hdd_tdls_config_state_change_policy[
-                    QCA_WLAN_VENDOR_ATTR_TDLS_STATE_MAX +1] =
-{
-    [QCA_WLAN_VENDOR_ATTR_TDLS_STATE_MAC_ADDR] = {.type = NLA_UNSPEC },
-    [QCA_WLAN_VENDOR_ATTR_TDLS_NEW_STATE] = {.type = NLA_S32 },
-    [QCA_WLAN_VENDOR_ATTR_TDLS_STATE_REASON] = {.type = NLA_S32 },
 
 };
 
@@ -16588,7 +16570,9 @@ static int __wlan_hdd_cfg80211_add_station(struct wiphy *wiphy,
 {
     int status = -EPERM;
 #ifdef FEATURE_WLAN_TDLS
+#ifdef BUILD_DEBUG_VERSION
     hdd_adapter_t *pAdapter =  WLAN_HDD_GET_PRIV_PTR(dev);
+#endif
     hdd_context_t *pHddCtx = wiphy_priv(wiphy);
     u32 mask, set;
 
