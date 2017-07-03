@@ -32,8 +32,6 @@
 #define DEF_FREQUENCY_DOWN_THRESHOLD		(30)
 #define MIN_SAMPLING_RATE_RATIO			(2)
 
-static unsigned int min_sampling_rate;
-
 #define LATENCY_MULTIPLIER			(1000)
 #define MIN_LATENCY_MULTIPLIER			(100)
 #ifdef CONFIG_ZEN_INTERACTIVE
@@ -93,6 +91,7 @@ static DEFINE_MUTEX(dbs_mutex);
 
 static struct dbs_tuners {
     unsigned int sampling_rate;
+    unsigned int min_sampling_rate;
     unsigned int up_threshold;
     unsigned int down_differential;
     unsigned int ignore_nice;
@@ -177,13 +176,6 @@ static struct notifier_block dbs_cpufreq_notifier_block = {
 };
 
 /************************** sysfs interface ************************/
-static ssize_t show_sampling_rate_min(struct kobject *kobj,
-				      struct attribute *attr, char *buf)
-{
-	return sprintf(buf, "%u\n", min_sampling_rate);
-}
-
-define_one_global_ro(sampling_rate_min);
 
 /* cpufreq_dancedance Governor Tunables */
 #define show_one(file_name, object)					\
@@ -193,6 +185,7 @@ static ssize_t show_##file_name						\
 	return sprintf(buf, "%u\n", dbs_tuners_ins.object);		\
 }
 show_one(sampling_rate, sampling_rate);
+show_one(min_sampling_rate, min_sampling_rate);
 show_one(sampling_down_factor, sampling_down_factor);
 show_one(up_threshold, up_threshold);
 show_one(down_threshold, down_threshold);
@@ -224,7 +217,21 @@ static ssize_t store_sampling_rate(struct kobject *a, struct attribute *b,
 	if (ret != 1)
 		return -EINVAL;
 
-	dbs_tuners_ins.sampling_rate = max(input, min_sampling_rate);
+	dbs_tuners_ins.sampling_rate = max(input, dbs_tuners_ins.min_sampling_rate);
+	return count;
+}
+
+static ssize_t store_min_sampling_rate(struct kobject *a, struct attribute *b,
+				   const char *buf, size_t count)
+{
+	unsigned int input;
+	int ret;
+	ret = sscanf(buf, "%u", &input);
+
+	if (ret != 1)
+		return -EINVAL;
+
+	dbs_tuners_ins.min_sampling_rate = min(input, dbs_tuners_ins.sampling_rate);
 	return count;
 }
 
@@ -310,6 +317,7 @@ static ssize_t store_freq_step(struct kobject *a, struct attribute *b,
 	return count;
 }
 
+define_one_global_rw(min_sampling_rate);
 define_one_global_rw(sampling_rate);
 define_one_global_rw(sampling_down_factor);
 define_one_global_rw(up_threshold);
@@ -318,7 +326,7 @@ define_one_global_rw(ignore_nice_load);
 define_one_global_rw(freq_step);
 
 static struct attribute *dbs_attributes[] = {
-	&sampling_rate_min.attr,
+	&min_sampling_rate.attr,
 	&sampling_rate.attr,
 	&sampling_down_factor.attr,
 	&up_threshold.attr,
@@ -571,13 +579,11 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
 			 * conservative does not implement micro like ondemand
 			 * governor, thus we are bound to jiffes/HZ
 			 */
-			min_sampling_rate =
-				MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(10);
 			/* Bring kernel and HW constraints together */
-			min_sampling_rate = max(min_sampling_rate,
+			dbs_tuners_ins.min_sampling_rate = max(MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(10),
 					MIN_LATENCY_MULTIPLIER * latency);
 			dbs_tuners_ins.sampling_rate =
-				max(min_sampling_rate,
+				max(dbs_tuners_ins.min_sampling_rate,
 				    latency * LATENCY_MULTIPLIER);
 
 			cpufreq_register_notifier(
