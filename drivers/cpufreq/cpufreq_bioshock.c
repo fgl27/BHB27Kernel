@@ -513,7 +513,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
 				return rc;
 			}
 
-			min_sampling_rate = 10000;
+			min_sampling_rate = 1000;
 			dbs_tuners_ins.sampling_rate = 10000;
 
 			cpufreq_register_notifier(
