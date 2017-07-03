@@ -243,6 +243,7 @@ static void darkness_check_cpu(struct cpufreq_darkness_cpuinfo *this_darkness_cp
 
 		if (load > max_load)
 			max_load = load;
+		cpufreq_notify_utilization(policy, max_load);
 	}
 
 	/* CPUs Online Scale Frequency*/

@@ -542,6 +542,8 @@ static void alucard_check_cpu(struct cpufreq_alucard_cpuinfo *this_alucard_cpuin
 
 		if (load > max_load)
 			max_load = load;
+
+		cpufreq_notify_utilization(policy, max_load);
 	}
 
 

@@ -535,6 +535,7 @@ static void nightmare_check_cpu(struct cpufreq_nightmare_cpuinfo *this_nightmare
 
 		if (load > max_load)
 			max_load = load;
+		cpufreq_notify_utilization(policy, max_load);
 	}
 
 	/* CPUs Online Scale Frequency*/

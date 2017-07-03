@@ -245,7 +245,7 @@ static void lf_check_cpu(struct lf_gdbs_data *dbs_data, int cpu)
 	/* compute the maximum absolute load */
 	load = lf_get_load(policy->cpus, lf_tuners->sampling_rate,
 		lf_tuners->ignore_nice_load, cdbs);
-
+	cpufreq_notify_utilization(policy, load);
 	freq_shift = get_freq_target(lf_tuners, policy);
 	hispeed = policy->max * JUMP_HISPEED_FREQ_PERCENTAGE / 100;
 	if (unlikely(hispeed < policy->min))

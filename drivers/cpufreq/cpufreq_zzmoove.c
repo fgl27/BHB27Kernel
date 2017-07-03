@@ -7345,7 +7345,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 		if (load > max_load)
 #endif /* CONFIG_ARCH_EXYNOS4 */
 		    cur_load = max_load = load;		// ZZ: added static cur_load for hotplugging functions
-
+                    cpufreq_notify_utilization(policy, cur_load);
 		/*
 		 * ZZ: Early demand by Stratosk
 		 * Calculate the gradient of load. If it is too steep we assume

@@ -192,6 +192,8 @@ static void cpufreq_ondemandplus_timer(unsigned long data)
         else
                 cpu_load = 100 * (delta_time - delta_idle) / delta_time;
 
+	cpufreq_notify_utilization(pcpu->policy, cpu_load);
+
         delta_idle = (unsigned int) (now_idle -        pcpu->target_set_time_in_idle);
         delta_time = (unsigned int) (pcpu->timer_run_time - pcpu->target_set_time);
 

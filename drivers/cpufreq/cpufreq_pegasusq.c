@@ -444,7 +444,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 
 		if (load > max_load)
 			max_load = load;
-
+		cpufreq_notify_utilization(policy, max_load);
 		freq_avg = __cpufreq_driver_getavg(policy, j);
 		if (freq_avg <= 0)
 			freq_avg = policy->cur;

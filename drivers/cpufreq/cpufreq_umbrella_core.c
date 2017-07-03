@@ -633,6 +633,7 @@ static void cpufreq_umbrella_core_timer(unsigned long data)
 	do_div(cputime_speedadj, delta_time);
 	loadadjfreq = (unsigned int)cputime_speedadj * 100;
 	cpu_load = loadadjfreq / pcpu->target_freq;
+	cpufreq_notify_utilization(pcpu->policy, cpu_load);
 	pcpu->prev_load = cpu_load;
 	boosted = boost_val || now < boostpulse_endtime;
 	pcpu->policy->util = cpu_load;
