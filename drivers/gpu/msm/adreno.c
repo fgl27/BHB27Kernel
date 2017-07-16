@@ -1964,11 +1964,13 @@ static int adreno_start(struct kgsl_device *device, int priority)
 	int nice = task_nice(current);
 	int ret;
 
+	/* default 501 will allow PC to happen, set it to 490 to prevent PC happening during adreno_start; */
+	pm_qos_update_request(&device->pwrctrl.pm_qos_req_dma, 490);
+
 	if (priority && (_wake_nice < nice))
 		set_user_nice(current, _wake_nice);
 
 	ret = _adreno_start(adreno_dev);
-
 	if (priority)
 		set_user_nice(current, nice);
 
