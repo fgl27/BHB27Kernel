@@ -39,4 +39,10 @@ config AUTOSMP
 	  Automatically hotplugs the multiple cpu cores on and off
 	  based on cpu load and suspend state
 
+config ALUCARD_HOTPLUG
+	bool "Enable alucard-hotplug cpu hotplug driver"
+	default y
+	help
+	  Generic Alucard-hotplug cpu hotplug driver for ARM SOCs
+
 endif # ARCH_MSM
