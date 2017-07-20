@@ -787,6 +787,7 @@ static ssize_t store_governor(struct device *dev, struct device_attribute *attr,
 
 	/* Governor white list */
 	if (strncmp(str_governor, "bw_hwmon", DEVFREQ_NAME_LEN) &&
+		strncmp(str_governor, "simple_ondemand", DEVFREQ_NAME_LEN) &&
 		strncmp(str_governor, "cpufreq", DEVFREQ_NAME_LEN) &&
 		strncmp(str_governor, "performance", DEVFREQ_NAME_LEN) &&
 		strncmp(str_governor, "powersave", DEVFREQ_NAME_LEN) &&
