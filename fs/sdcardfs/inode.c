@@ -737,13 +737,9 @@ static int sdcardfs_setattr(struct dentry *dentry, struct iattr *ia)
 	 * afterwards in the other cases: we fsstack_copy_inode_size from
 	 * the lower level.
 	 */
-	if (current->mm)
-		down_write(&current->mm->mmap_sem);
 	if (ia->ia_valid & ATTR_SIZE) {
 		err = inode_newsize_ok(inode, ia->ia_size);
 		if (err) {
-			if (current->mm)
-				up_write(&current->mm->mmap_sem);
 			goto out;
 		}
 		truncate_setsize(inode, ia->ia_size);
@@ -765,8 +761,6 @@ static int sdcardfs_setattr(struct dentry *dentry, struct iattr *ia)
 	mutex_lock(&lower_dentry->d_inode->i_mutex);
 	err = notify_change(lower_dentry, &lower_ia); /* note: lower_ia */
 	mutex_unlock(&lower_dentry->d_inode->i_mutex);
-	if (current->mm)
-		up_write(&current->mm->mmap_sem);
 	if (err)
 		goto out;
 
