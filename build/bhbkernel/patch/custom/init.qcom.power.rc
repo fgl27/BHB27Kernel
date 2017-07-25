@@ -105,6 +105,9 @@ on property:sys.boot_completed=1
     # GPU max clock 500hz
     write /sys/devices/fdb00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 500000000
 
+    # Ena state notifier
+    write /sys/module/state_notifier/parameters/enabled 1
+
 service postinitrr_sh /system/bin/sh /sbin/post_init_rr.sh
     class main
     user root

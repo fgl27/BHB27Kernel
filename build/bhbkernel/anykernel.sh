@@ -3,7 +3,7 @@
 
 ## AnyKernel setup
 # EDIFY properties
-kernel.string=Slim by BHB27 @ xda-developers
+kernel.string=BHB27-Kernel by BHB27 @ xda-developers
 do.devicecheck=0
 do.initd=0
 do.modules=1
