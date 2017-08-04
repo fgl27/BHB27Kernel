@@ -30,9 +30,6 @@
 #include <linux/of_gpio.h>
 #include <linux/spinlock.h>
 
-struct device *sec_key;
-EXPORT_SYMBOL(sec_key);
-
 struct gpio_button_data {
 	const struct gpio_keys_button *button;
 	struct input_dev *input;
