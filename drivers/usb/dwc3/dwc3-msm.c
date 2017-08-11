@@ -1842,8 +1842,6 @@ static int dwc3_msm_power_set_property_usb(struct power_supply *psy,
 		if (mdwc->otg_xceiv && !mdwc->ext_inuse &&
 			(mdwc->ext_xceiv.otg_capability || !init) &&
 			!mdwc->in_restart) {
-			if (mdwc->ext_xceiv.bsv == val->intval)
-				break;
 
 			mdwc->ext_xceiv.bsv = val->intval;
 			/* Kick the phone out of host mode if vbus is on */
