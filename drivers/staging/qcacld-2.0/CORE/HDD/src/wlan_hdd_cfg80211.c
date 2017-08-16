@@ -4505,7 +4505,7 @@ static int wlan_hdd_cfg80211_set_passpoint_list(struct wiphy *wiphy,
 	ENTER();
 
 	if (nla_parse(tb, QCA_WLAN_VENDOR_ATTR_PNO_MAX, data, data_len,
-		wlan_hdd_extscan_config_policy)) {
+		wlan_hdd_pno_config_policy)) {
 		hddLog(LOGE, FL("Invalid ATTR"));
 		return -EINVAL;
 	}
