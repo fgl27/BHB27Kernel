@@ -69,11 +69,6 @@
 		};
 	};
 
-	kexec_hardboot-hole {
-		compatible = "qcom,msm-contig-mem";
-		qcom,memblock-reserve = <0x3e9df000 0x1000>;
-	};
-
 	sound-9330 {
 		status = "disabled";
 	};
