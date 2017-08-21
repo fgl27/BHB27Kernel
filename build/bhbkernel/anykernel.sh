@@ -359,6 +359,8 @@ elif [ "$romtype" == 2 ]; then
 	replace_string init.target.rc  "min_cores=4" "min_cores=1" "min_cores=4"
 	insert_line init.qcom.rc "init.qcom.power.rc" after "import init.target.rc" "import init.qcom.power.rc"
 fi
+remove_line "sbin/post_init_rr.sh" "mount -o ro,remount /system;"
+remove_line "sbin/restart.sh" "mount -o ro,remount /system;"
 # end ramdisk changes
 
 write_boot;
