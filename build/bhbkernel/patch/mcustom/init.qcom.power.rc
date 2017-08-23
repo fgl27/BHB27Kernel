@@ -71,6 +71,8 @@ on boot
 
 on property:sys.boot_completed=1
 
+    start postinitrr_sh_c
+
     # Configure the hardware properly
     write /sys/module/lpm_levels/enable_low_power/l2 4
     write /sys/module/msm_pm/modes/cpu0/power_collapse/suspend_enabled 1
@@ -136,6 +138,13 @@ on property:sys.boot_completed=1
     write /sys/module/state_notifier/parameters/enabled 1
 
 service postinitrr_sh /system/bin/sh /sbin/post_init_rr.sh
+    class main
+    user root
+    seclabel u:r:init:s0
+    disabled
+    oneshot
+
+service postinitrr_sh_c /system/bin/sh /sbin/post_init_rr_bootc.sh
     class main
     user root
     seclabel u:r:init:s0
