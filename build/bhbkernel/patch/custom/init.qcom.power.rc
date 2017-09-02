@@ -120,7 +120,6 @@ service postinitrr_sh /system/bin/sh /sbin/post_init_rr.sh
     disabled
     oneshot
 
-
 service postinitrr_sh_c /system/bin/sh /sbin/post_init_rr_bootc.sh
     class main
     user root
