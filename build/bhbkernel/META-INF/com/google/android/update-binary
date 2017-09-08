@@ -176,10 +176,6 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.modules)" == 1 ]; then
 	set_perm_recursive 0 0 0755 0644 /system/etc/init.qcom.post_boot.sh;
 	rm -rf /system/lib/hw/power.apq8084.so
   elif [ "$sdk" -gt 23 ]; then
-	  if [ ! -e /system/lib/libshims_thermal.so ]; then
-	    cp /tmp/anykernel/system/libshims_thermal /system/lib/libshims_thermal.so;
-	    set_perm_recursive 0 0 0755 0644 /system/lib/libshims_thermal.so;
-	  fi
 
 	  if [ ! -e /system/lib/libshim_qcopt.so ]; then
 	    cp /tmp/anykernel/system/libshim_qcopt /system/lib/libshim_qcopt.so;
