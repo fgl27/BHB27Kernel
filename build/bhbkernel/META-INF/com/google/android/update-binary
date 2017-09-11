@@ -16,8 +16,8 @@ set_perm_recursive() {
   dirs=$(echo $* | $bb awk '{ print substr($0, index($0,$5)) }');
   for i in $dirs; do
     chown -R $1.$2 $i; chown -R $1:$2 $i;
-    find "$i" -type d -exec chmod $3 {} +;
-    find "$i" -type f -exec chmod $4 {} +;
+    $bb find "$i" -type d -exec chmod $3 {} +;
+    $bb find "$i" -type f -exec chmod $4 {} +;
   done;
 }
 file_getprop() { grep "^$2" "$1" | cut -d= -f2; }
@@ -32,7 +32,7 @@ abort() {
    rm -rf /tmp/anykernel;
  fi;
  umount /system;
- umount /data;
+ mount /data 2>/dev/null;
  exit; 
 }
 
@@ -57,6 +57,8 @@ contains() {
 }
 chmod -R 755 /tmp/anykernel/tools /tmp/anykernel/bin;
 bb=/tmp/anykernel/tools/busybox;
+chmod 755 $bb;
+$bb chmod -R 755 /tmp/anykernel/tools /tmp/anykernel/bin;
 
 # Support for multi ROM base on build prop
 mount -o ro /system;
@@ -161,6 +163,8 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.modules)" == 1 ]; then
   ln -sf /system/lib/modules/qca_cld/qca_cld_wlan.ko /system/lib/modules/wlan.ko;
   set_perm_recursive 0 0 0755 0644 /system/lib/modules;
   set_perm_recursive 0 0 0755 0644 /system/lib/modules/qca_cld;
+  chcon -R 'u:object_r:system_file:s0' $root/system/lib/modules;
+  chcon -R 'u:object_r:system_file:s0' $root/system/lib/modules/qca_cld;
 
   cp -rf /tmp/anykernel/system/etc/wifi/* /system/etc/wifi/;
   set_perm_recursive 0 0 0755 0644 /system/etc/wifi/;
@@ -290,6 +294,6 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.cleanup)" == 1 ]; then
 fi;
 
 umount /system;
-umount /data;
+mount /data 2>/dev/null;
 ui_print " ";
 ui_print "Done!";
