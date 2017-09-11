@@ -40,6 +40,7 @@ FOLDER=$HOME/android/apq8084/;
 cd $FOLDER;
 
 # CROSS_COMPILE toolchain folder
+# latest tools may need this https://forum.xda-developers.com/showpost.php?p=73219523&postcount=42
 #export CROSS_COMPILE=$HOME/android/n/prebuilts/gcc/linux-x86/arm/arm-eabi-4.8/bin/arm-eabi-
 #export CROSS_COMPILE=$HOME/android/temp/arm-eabi-4.9/bin/arm-eabi-
 export CROSS_COMPILE=$HOME/android/temp/arm-eabi-4.9-ubertc/bin/arm-eabi-
