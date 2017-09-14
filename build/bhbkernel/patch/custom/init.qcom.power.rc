@@ -113,6 +113,9 @@ on property:sys.boot_completed=1
     # Ena state notifier
     write /sys/module/state_notifier/parameters/enabled 1
 
+    # bcl mitigation-freq
+    write /sys/devices/qcom,bcl.38/freq_max 1267200
+
 service postinitrr_sh /system/bin/sh /sbin/post_init_rr.sh
     class main
     user root
