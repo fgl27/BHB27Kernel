@@ -858,6 +858,7 @@ static ssize_t store_polling_interval(struct device *dev,
 	if (ret != 1)
 		return -EINVAL;
 
+	df->profile->polling_ms = value;
 	df->governor->event_handler(df, DEVFREQ_GOV_INTERVAL, &value);
 	ret = count;
 
