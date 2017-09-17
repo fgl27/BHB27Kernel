@@ -168,7 +168,7 @@ static int32_t msm_cci_validate_queue(struct cci_device *cci_dev,
 		reg_val = 1 << ((master * 2) + queue);
 		CDBG("%s:%d CCI_QUEUE_START_ADDR\n", __func__, __LINE__);
 		msm_camera_io_w(reg_val, cci_dev->base + CCI_QUEUE_START_ADDR);
-		CDBG("%s line %d wait_for_completion_interruptible\n",
+		CDBG("%s line %d wait_for_completion_timeout\n",
 			__func__, __LINE__);
 		rc = wait_for_completion_interruptible_timeout(&cci_dev->
 			cci_master_info[master].reset_complete, CCI_TIMEOUT);
@@ -421,7 +421,7 @@ static int32_t msm_cci_i2c_read(struct v4l2_subdev *sd,
 
 	val = 1 << ((master * 2) + queue);
 	msm_camera_io_w(val, cci_dev->base + CCI_QUEUE_START_ADDR);
-	CDBG("%s:%d E wait_for_completion_interruptible_timeout\n", __func__,
+	CDBG("%s:%d E wait_for_completion_timeout\n", __func__,
 		__LINE__);
 	rc = wait_for_completion_interruptible_timeout(&cci_dev->
 		cci_master_info[master].reset_complete, CCI_TIMEOUT);
@@ -485,7 +485,7 @@ static int32_t msm_cci_i2c_read_bytes(struct v4l2_subdev *sd,
 	uint16_t read_bytes = 0;
 
 	if (!sd || !c_ctrl) {
-		pr_err("%s:%d sd %p c_ctrl %p\n", __func__,
+		pr_err("%s:%d sd %pK c_ctrl %pK\n", __func__,
 			__LINE__, sd, c_ctrl);
 		return -EINVAL;
 	}
@@ -626,7 +626,7 @@ static int32_t msm_cci_i2c_write(struct v4l2_subdev *sd,
 	CDBG("%s:%d CCI_QUEUE_START_ADDR\n", __func__, __LINE__);
 	msm_camera_io_w(val, cci_dev->base + CCI_QUEUE_START_ADDR);
 
-	CDBG("%s:%d E wait_for_completion_interruptible\n",
+	CDBG("%s:%d E wait_for_completion_timeout\n",
 		__func__, __LINE__);
 	rc = wait_for_completion_interruptible_timeout(&cci_dev->
 		cci_master_info[master].reset_complete, CCI_TIMEOUT);
@@ -640,7 +640,7 @@ static int32_t msm_cci_i2c_write(struct v4l2_subdev *sd,
 	} else {
 		rc = cci_dev->cci_master_info[master].status;
 	}
-	CDBG("%s:%d X wait_for_completion_interruptible\n", __func__,
+	CDBG("%s:%d X wait_for_completion_timeout\n", __func__,
 		__LINE__);
 
 ERROR:
@@ -735,7 +735,7 @@ static int32_t msm_cci_init(struct v4l2_subdev *sd,
 	cci_dev = v4l2_get_subdevdata(sd);
 
 	if (!cci_dev || !c_ctrl) {
-		pr_err("%s:%d failed: invalid params %p %p\n", __func__,
+		pr_err("%s:%d failed: invalid params %pK %pK\n", __func__,
 			__LINE__, cci_dev, c_ctrl);
 		rc = -ENOMEM;
 		return rc;
@@ -757,7 +757,7 @@ static int32_t msm_cci_init(struct v4l2_subdev *sd,
 				msm_camera_io_w(CCI_M1_RESET_RMSK,
 					cci_dev->base + CCI_RESET_CMD_ADDR);
 			/* wait for reset done irq */
-			rc = wait_for_completion_interruptible_timeout(
+			rc = wait_for_completion_timeout(
 				&cci_dev->cci_master_info[master].
 				reset_complete,
 				CCI_TIMEOUT);
@@ -793,11 +793,11 @@ static int32_t msm_cci_init(struct v4l2_subdev *sd,
 	cci_dev->cci_master_info[MASTER_0].reset_pending = TRUE;
 	msm_camera_io_w(CCI_RESET_CMD_RMSK, cci_dev->base + CCI_RESET_CMD_ADDR);
 	msm_camera_io_w(0x1, cci_dev->base + CCI_RESET_CMD_ADDR);
-	rc = wait_for_completion_interruptible_timeout(
+	rc = wait_for_completion_timeout(
 		&cci_dev->cci_master_info[MASTER_0].reset_complete,
 		CCI_TIMEOUT);
 	if (rc <= 0) {
-		pr_err("%s: wait_for_completion_interruptible_timeout %d\n",
+		pr_err("%s: wait_for_completion_timeout %d\n",
 			 __func__, __LINE__);
 		if (rc == 0)
 			rc = -ETIMEDOUT;
@@ -1253,7 +1253,7 @@ static int msm_cci_probe(struct platform_device *pdev)
 {
 	struct cci_device *new_cci_dev;
 	int rc = 0;
-	pr_err("%s: pdev %p device id = %d\n", __func__, pdev, pdev->id);
+	CDBG("%s: pdev %pK device id = %d\n", __func__, pdev, pdev->id);
 	new_cci_dev = kzalloc(sizeof(struct cci_device), GFP_KERNEL);
 	if (!new_cci_dev) {
 		CDBG("%s: no enough memory\n", __func__);
@@ -1265,7 +1265,7 @@ static int msm_cci_probe(struct platform_device *pdev)
 			ARRAY_SIZE(new_cci_dev->msm_sd.sd.name), "msm_cci");
 	v4l2_set_subdevdata(&new_cci_dev->msm_sd.sd, new_cci_dev);
 	platform_set_drvdata(pdev, &new_cci_dev->msm_sd.sd);
-	CDBG("%s sd %p\n", __func__, &new_cci_dev->msm_sd.sd);
+	CDBG("%s sd %pK\n", __func__, &new_cci_dev->msm_sd.sd);
 	if (pdev->dev.of_node)
 		of_property_read_u32((&pdev->dev)->of_node,
 			"cell-index", &pdev->id);
@@ -1328,7 +1328,7 @@ static int msm_cci_probe(struct platform_device *pdev)
 		pr_err("%s: failed to add child nodes, rc=%d\n", __func__, rc);
 	new_cci_dev->cci_state = CCI_STATE_DISABLED;
 	g_cci_subdev = &new_cci_dev->msm_sd.sd;
-	CDBG("%s cci subdev %p\n", __func__, &new_cci_dev->msm_sd.sd);
+	CDBG("%s cci subdev %pK\n", __func__, &new_cci_dev->msm_sd.sd);
 	CDBG("%s line %d\n", __func__, __LINE__);
 	return 0;
 
