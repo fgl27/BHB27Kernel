@@ -582,14 +582,18 @@ static int msm_otg_reset(struct usb_phy *phy)
 			motg->reset_counter++;
 	}
 
+	disable_irq(motg->irq);
+
 	if (motg->clk)
 		clk_prepare_enable(motg->clk);
 	ret = msm_otg_phy_reset(motg);
 	if (ret) {
 		dev_err(phy->dev, "phy_reset failed\n");
+		enable_irq(motg->irq);
 		return ret;
 	}
 
+	enable_irq(motg->irq);
 	aca_id_turned_on = false;
 	ret = msm_otg_link_reset(motg);
 	if (ret) {
