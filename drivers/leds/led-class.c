@@ -59,17 +59,6 @@ static ssize_t led_brightness_store(struct device *dev,
 	return size;
 }
 
-static ssize_t led_blink_show(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	struct led_classdev *led_cdev = dev_get_drvdata(dev);
-
-	scnprintf(buf, PAGE_SIZE, "on=%lu,off=%lu\n",
-		led_cdev->blink_delay_on, led_cdev->blink_delay_off);
-
-	return strlen(buf);
-}
-
 static ssize_t led_blink_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t size)
 {
@@ -127,7 +116,7 @@ static struct device_attribute led_class_attrs[] = {
 #ifdef CONFIG_LEDS_TRIGGERS
 	__ATTR(trigger, 0664, led_trigger_show, led_trigger_store),
 #endif
-        __ATTR(blink, 0664, led_blink_show, led_blink_store),
+        __ATTR(blink, 0664, NULL, led_blink_store),
 	__ATTR_NULL,
 };
 
