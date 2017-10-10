@@ -140,13 +140,20 @@ on property:sys.boot_completed=1
 service postinitrr_sh /system/bin/sh /sbin/post_init_rr.sh
     class main
     user root
-    seclabel u:r:init:s0
+    seclabel u:r:sudaemon:s0
     disabled
     oneshot
 
 service postinitrr_sh_c /system/bin/sh /sbin/post_init_rr_bootc.sh
     class main
     user root
-    seclabel u:r:init:s0
+    seclabel u:r:sudaemon:s0
+    disabled
+    oneshot
+
+service zram_init /system/bin/sh /sbin/zram_init.sh
+    class main
+    user root
+    seclabel u:r:sudaemon:s0
     disabled
     oneshot
