@@ -76,8 +76,6 @@ on moto-charger
 
 on fs
     mount_all fstab.qcom
-    # zram swapon service swapon fstab resets zram and values set beore start it
-    start zram_init
     restorecon_recursive /persist
 
     # use /persist as phony PDS partition

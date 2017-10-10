@@ -40,7 +40,10 @@ on init
     write /sys/devices/system/cpu/cpu3/cpufreq/scaling_max_freq 2649600
 
 on boot
-    start postinitrr_sh
+    write /proc/sys/vm/page-cluster 0
+    write /sys/block/zram0/reset 1
+    write /sys/block/zram0/max_comp_streams 4
+    write /sys/block/zram0/disksize 419430400
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
     restorecon_recursive /sys/devices/system/cpu/cpufreq/interactive
     chown system system /sys/devices/system/cpu/cpufreq/interactive/timer_rate
@@ -93,6 +96,10 @@ on property:sys.boot_completed=1
     write /sys/module/msm_pm/modes/cpu1/retention/idle_enabled 1
     write /sys/module/msm_pm/modes/cpu2/retention/idle_enabled 1
     write /sys/module/msm_pm/modes/cpu3/retention/idle_enabled 1
+    write /sys/module/msm_pm/modes/cpu0/retention/suspend_enabled 1
+    write /sys/module/msm_pm/modes/cpu1/retention/suspend_enabled 1
+    write /sys/module/msm_pm/modes/cpu2/retention/suspend_enabled 1
+    write /sys/module/msm_pm/modes/cpu3/retention/suspend_enabled 1
     write /sys/module/msm_thermal/core_control/enabled 0
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
     write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor interactive
@@ -100,7 +107,6 @@ on property:sys.boot_completed=1
     write /sys/devices/system/cpu/cpu3/cpufreq/scaling_governor interactive
     write /sys/module/msm_thermal/core_control/enabled 1
     write /sys/devices/system/cpu/cpufreq/interactive/io_is_busy 1
-
 
     # Configure the CPU governor
     write /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay "20000 1400000:40000 1700000:20000"
@@ -114,8 +120,8 @@ on property:sys.boot_completed=1
 
     # Configure the cpu-boost module
     write /sys/module/cpu_boost/parameters/input_boost_freq 1497600
-    write /sys/module/cpu_boost/parameters/boost_ms 20
-    write /sys/module/cpu_boost/parameters/input_boost_ms 800
+    write /sys/module/cpu_boost/parameters/boost_ms 20 
+    write /sys/module/cpu_boost/parameters/input_boost_ms 40
 
    #sync_threshold use stock value
    write /sys/module/cpu_boost/parameters/sync_threshold 1728000
@@ -123,14 +129,17 @@ on property:sys.boot_completed=1
     #Set io ahead for better performance,
     write /sys/block/mmcblk0/queue/read_ahead_kb 512
 
-    # enable adreno_idler
-    write /sys/module/adreno_idler/parameters/adreno_idler_active Y
-
     # Set io ahead for better performance
     setprop sys.io.scheduler bfq
+
+     # enable adreno_idler
+     write /sys/module/adreno_idler/parameters/adreno_idler_active Y
 
     # GPU max clock 500hz
     write /sys/devices/fdb00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 500000000
 
     # Ena state notifier
     write /sys/module/state_notifier/parameters/enabled 1
+
+    # bcl mitigation-freq
+    write /sys/devices/qcom,bcl.38/freq_max 1267200
