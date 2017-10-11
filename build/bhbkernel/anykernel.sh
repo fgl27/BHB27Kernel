@@ -11,6 +11,12 @@ do.cleanup=1
 do.buildprop=1
 device.name1=quark
 
+zramsize=1; 
+# to change the above value use a value in MB times 1024 times 1024 or MB_value x 1024 x 1024
+# eg 500MB is 500 x 1024 x 1024 = 524288000
+# so zramsize=524288000;
+# use zramsize=0; to disable the featuring
+
 # shell variables
 docmdline=1;
 is_slot_device=0;
@@ -328,7 +334,8 @@ patch_fstab() {
       options) part=$(echo "$entry" | awk '{ print $4 }');;
       flags) part=$(echo "$entry" | awk '{ print $5 }');;
     esac;
-    newentry=$(echo "$entry" | sed "s;${part};${6};");
+    newpart=$(echo "$part" | sed "s;${5};${6};");
+    newentry=$(echo "$entry" | sed "s;${part};${newpart};");
     sed -i "s;${entry};${newentry};" $1;
   fi;
 }
@@ -341,7 +348,7 @@ seinject() {
     $bin/sepolicy-inject-N $1 $ramdisk/sepolicy;
   fi;
 }
-
+b
 ## end methods
 
 ## AnyKernel permissions
@@ -366,7 +373,17 @@ elif [ "$romtype" == 1 ]; then
 elif [ "$romtype" == 2 ]; then
 	replace_string init.target.rc  "min_cores=4" "min_cores=1" "min_cores=4"
 	insert_line init.qcom.rc "init.qcom.power.rc" after "import init.target.rc" "import init.qcom.power.rc"
+	replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=335544320"
 fi
+
+if [ "$zramsize" != 1 ]; then
+	if [ "$romtype" == 2 ]; then
+		replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=$zramsize"
+	else
+		replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=$zramsize,notrim"
+	fi
+fi
+
 remove_line "sbin/post_init_rr.sh" "mount -o ro,remount /system;"
 remove_line "sbin/restart.sh" "mount -o ro,remount /system;"
 # end ramdisk changes
