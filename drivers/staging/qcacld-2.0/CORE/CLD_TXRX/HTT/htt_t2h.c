@@ -149,19 +149,19 @@ htt_t2h_lp_msg_handler(void *context, adf_nbuf_t htt_t2h_msg )
             htc_pm_runtime_put(pdev->htc_pdev);
             pdev->tgt_ver.major = HTT_VER_CONF_MAJOR_GET(*msg_word);
             pdev->tgt_ver.minor = HTT_VER_CONF_MINOR_GET(*msg_word);
-            adf_os_print("target uses HTT version %d.%d; host uses %d.%d\n",
-                pdev->tgt_ver.major, pdev->tgt_ver.minor,
-                HTT_CURRENT_VERSION_MAJOR, HTT_CURRENT_VERSION_MINOR);
             if (pdev->tgt_ver.major != HTT_CURRENT_VERSION_MAJOR) {
                 adf_os_print("*** Incompatible host/target HTT versions!\n");
+                adf_os_print("target uses HTT version %d.%d; host uses %d.%d\n",
+                    pdev->tgt_ver.major, pdev->tgt_ver.minor,
+                    HTT_CURRENT_VERSION_MAJOR, HTT_CURRENT_VERSION_MINOR);
             }
             /* abort if the target is incompatible with the host */
             adf_os_assert(pdev->tgt_ver.major == HTT_CURRENT_VERSION_MAJOR);
-            if (pdev->tgt_ver.minor != HTT_CURRENT_VERSION_MINOR) {
+            /* if (pdev->tgt_ver.minor != HTT_CURRENT_VERSION_MINOR) {
                 adf_os_print(
                     "*** Warning: host/target HTT versions are different, "
                     "though compatible!\n");
-            }
+            } */
             break;
         }
     case HTT_T2H_MSG_TYPE_RX_FLUSH:
