@@ -98,6 +98,7 @@ dump_boot() {
   fi;
   mv -f $ramdisk /tmp/anykernel/rdtmp;
   mkdir -p $ramdisk;
+  chmod 755 $ramdisk;
   magicbytes=$(hexdump -vn2 -e '2/1 "%x"' $split_img/boot.img-ramdisk.gz);
   lzma=0;
   contains $magicbytes "5d0" && lzma=1;
@@ -105,7 +106,7 @@ dump_boot() {
   if [ "$lzma" == "1" ]; then
     lzma -dc $split_img/boot.img-ramdisk.gz | cpio -i;
   else
-    gunzip -c $split_img/boot.img-ramdisk.gz | cpio -i;
+    gunzip -c $split_img/boot.img-ramdisk.gz | cpio -i -d;
   fi;
   if [ $? != 0 -o -z "$(ls $ramdisk)" ]; then
     ui_print " "; ui_print "Unpacking ramdisk failed. Aborting..."; exit 1;
