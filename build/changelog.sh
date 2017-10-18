@@ -46,7 +46,7 @@ git_log_tree() {
 		temp_two="${temp_two//:/%3A}"
 		temp_two="${temp_two//\'/%27}"
 		temp_two="${temp_two//\`/%60}"
-		echo "* [$string](https://github.com/search?q=${temp_two}&type=Commits)" >> $Changelog;
+		echo "* [$string](https://github.com/bhb27/BHB27Kernel/search?q=${temp_two}&type=Commits)" >> $Changelog;
         done
 	cd -  > /dev/null
 	echo >> $Changelog;
