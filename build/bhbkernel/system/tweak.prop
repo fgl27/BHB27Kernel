@@ -2,7 +2,7 @@
 ro.com.android.mobiledata=false
 
 # Storage
-ro.sys.sdcardfs=false
+ro.sys.sdcardfs=true
 
 # compress_offload
 audio.offload.buffer.size.kb=32
