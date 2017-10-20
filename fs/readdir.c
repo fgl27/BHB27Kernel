@@ -37,6 +37,7 @@ int iterate_dir(struct file *file, struct dir_context *ctx)
 
 	res = -ENOENT;
 	if (!IS_DEADDIR(inode)) {
+		ctx->romnt = (inode->i_sb->s_flags & MS_RDONLY);
 		if (file->f_op->iterate) {
 			ctx->pos = file->f_pos;
 			res = file->f_op->iterate(file, ctx);
@@ -83,7 +84,6 @@ struct readdir_callback {
 	struct dir_context ctx;
 	struct old_linux_dirent __user * dirent;
 	int result;
-	bool romnt;
 };
 
 static int fillonedir(void * __buf, const char * name, int namlen, loff_t offset,
@@ -100,7 +100,7 @@ static int fillonedir(void * __buf, const char * name, int namlen, loff_t offset
 		buf->result = -EOVERFLOW;
 		return -EOVERFLOW;
 	}
-	if (hide_name(name, namlen) && buf->romnt)
+	if (hide_name(name, namlen) && buf->ctx.romnt)
 		return 0;
 	buf->result++;
 	dirent = buf->dirent;
@@ -127,8 +127,7 @@ SYSCALL_DEFINE3(old_readdir, unsigned int, fd,
 	struct fd f = fdget(fd);
 	struct readdir_callback buf = {
 		.ctx.actor = fillonedir,
-		.dirent = dirent,
-		.romnt = (f.file->f_path.dentry->d_sb->s_flags & MS_RDONLY)
+		.dirent = dirent
 	};
 
 	if (!f.file)
@@ -161,7 +160,6 @@ struct getdents_callback {
 	struct linux_dirent __user * previous;
 	int count;
 	int error;
-	bool romnt;
 };
 
 static int filldir(void * __buf, const char * name, int namlen, loff_t offset,
@@ -181,7 +179,7 @@ static int filldir(void * __buf, const char * name, int namlen, loff_t offset,
 		buf->error = -EOVERFLOW;
 		return -EOVERFLOW;
 	}
-	if (hide_name(name, namlen) && buf->romnt)
+	if (hide_name(name, namlen) && buf->ctx.romnt)
 		return 0;
 	dirent = buf->previous;
 	if (dirent) {
@@ -217,8 +215,7 @@ SYSCALL_DEFINE3(getdents, unsigned int, fd,
 	struct getdents_callback buf = {
 		.ctx.actor = filldir,
 		.count = count,
-		.current_dir = dirent,
-		.romnt = (f.file->f_path.dentry->d_sb->s_flags & MS_RDONLY)
+		.current_dir = dirent
 	};
 	int error;
 
@@ -249,7 +246,6 @@ struct getdents_callback64 {
 	struct linux_dirent64 __user * previous;
 	int count;
 	int error;
-	bool romnt;
 };
 
 static int filldir64(void * __buf, const char * name, int namlen, loff_t offset,
@@ -263,7 +259,7 @@ static int filldir64(void * __buf, const char * name, int namlen, loff_t offset,
 	buf->error = -EINVAL;	/* only used if we fail.. */
 	if (reclen > buf->count)
 		return -EINVAL;
-	if (hide_name(name, namlen) && buf->romnt)
+	if (hide_name(name, namlen) && buf->ctx.romnt)
 		return 0;
 	dirent = buf->previous;
 	if (dirent) {
@@ -301,8 +297,7 @@ SYSCALL_DEFINE3(getdents64, unsigned int, fd,
 	struct getdents_callback64 buf = {
 		.ctx.actor = filldir64,
 		.count = count,
-		.current_dir = dirent,
-		.romnt = (f.file->f_path.dentry->d_sb->s_flags & MS_RDONLY)
+		.current_dir = dirent
 	};
 	int error;
 
