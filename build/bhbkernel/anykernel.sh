@@ -374,14 +374,14 @@ elif [ "$romtype" == 1 ]; then
 elif [ "$romtype" == 2 ]; then
 	replace_string init.target.rc  "min_cores=4" "min_cores=1" "min_cores=4"
 	insert_line init.qcom.rc "init.qcom.power.rc" after "import init.target.rc" "import init.qcom.power.rc"
-	replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=335544320"
+	replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=335544320,zramstreams=4,swapprio=10"
 fi
 
 if [ "$zramsize" != 1 ]; then
 	if [ "$romtype" == 2 ]; then
-		replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=$zramsize"
+		replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=$zramsize,zramstreams=4,swapprio=10"
 	else
-		replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=$zramsize,notrim"
+		replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=$zramsize,zramstreams=4,swapprio=10,notrim"
 	fi
 fi
 
