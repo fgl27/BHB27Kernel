@@ -172,8 +172,8 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.modules)" == 1 ]; then
   cp -rf /tmp/anykernel/system/etc/firmware/wlan/qca_cld/* /system/etc/firmware/wlan/qca_cld/;
   set_perm_recursive 0 0 0755 0644 /system/etc/firmware/wlan/qca_cld/;
 
-  cp -rf /tmp/anykernel/system/etc/audio_policy.conf /system/etc/audio_policy.conf;
-  set_perm_recursive 0 0 0755 0644 /system/etc/audio_policy.conf;
+#  cp -rf /tmp/anykernel/system/etc/audio_policy.conf /system/etc/audio_policy.conf;
+#  set_perm_recursive 0 0 0755 0644 /system/etc/audio_policy.conf;
 
   if [ "$stock" == "1" ]; then
 	cp -rf /tmp/anykernel/system/etc/init.qcom.post_boot.sh /system/etc/init.qcom.post_boot.sh;
