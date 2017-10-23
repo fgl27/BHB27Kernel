@@ -155,7 +155,7 @@ static void __cpuinit asmp_work_fn(struct work_struct *work)
 		if (nr_cpu_online < asmp_param.max_cpus &&
 				cycle >= asmp_param.cycle_up) {
 			cpu = cpumask_next_zero(0, cpu_online_mask);
-			if (cpu_is_offline(cpu))
+			if ((cpu != 0) && !cpu_online(cpu))
 				cpu_up(cpu);
 			cycle = 0;
 #if DEBUG
@@ -169,7 +169,7 @@ static void __cpuinit asmp_work_fn(struct work_struct *work)
 		if (nr_cpu_online < asmp_param.cpus_boosted &&
 			nr_cpu_online < asmp_param.max_cpus) {
 			cpu = cpumask_next_zero(0, cpu_online_mask);
-			if (cpu_is_offline(cpu))
+			if ((cpu != 0) && !cpu_online(cpu))
 				cpu_up(cpu);
 			// cycle = 0;
 		}
@@ -178,7 +178,7 @@ static void __cpuinit asmp_work_fn(struct work_struct *work)
 		if (nr_cpu_online > asmp_param.min_cpus &&
 				cycle >= asmp_param.cycle_down) {
 
-			if (cpu_online(slow_cpu))
+			if ((cpu != 0) && cpu_online(slow_cpu))
 	 			cpu_down(slow_cpu);
 			cycle = 0;
 #if DEBUG
@@ -204,7 +204,7 @@ static void asmp_suspend(void)
 
 	/* unplug online cpu cores */
 	for_each_possible_cpu(cpu)
-		if (cpu != 0 && cpu_online(cpu))
+		if ((cpu != 0) && cpu_online(cpu))
 			cpu_down(cpu);
 
 	pr_info(ASMP_TAG"Screen -> Off. Suspended.\n");
@@ -214,10 +214,15 @@ static void __ref asmp_resume(void)
 {
 	unsigned int cpu;
 
-	/* Fire up all CPUs */
-	for_each_possible_cpu(cpu)
-		if (cpu_is_offline(cpu))
-			cpu_up(cpu);
+	if (wakeup_boost) {
+		/* Fire up all CPUs */
+		for_each_possible_cpu(cpu) {
+			if (cpu == 0)
+				continue;
+			if (!cpu_online(cpu) && num_online_cpus() < asmp_param.max_cpus)
+				cpu_up(cpu);
+		}
+	}
 
 	last_boost_time = ktime_to_us(ktime_get());
 
@@ -404,9 +409,12 @@ static void __ref hotplug_stop(void)
 	destroy_workqueue(asmp_workq);
 
 	/* Wake up all the sibling cores */
-	for_each_possible_cpu(cpu)
-		if (cpu_is_offline(cpu))
+	for_each_possible_cpu(cpu) {
+		if (cpu == 0)
+			continue;
+		if (!cpu_online(cpu))
 			cpu_up(cpu);
+	}
 }
 
 static int __cpuinit set_enabled(const char *val, const struct kernel_param *kp)

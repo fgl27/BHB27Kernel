@@ -62,9 +62,15 @@ static void __ref up_all(void)
 {
 	unsigned int cpu;
 
-	for_each_possible_cpu(cpu)
-		if (cpu_is_offline(cpu) && num_online_cpus() < max_online)
-			cpu_up(cpu);
+	if (wakeup_boost) {
+		/* Fire up all CPUs */
+		for_each_possible_cpu(cpu) {
+			if (cpu == 0)
+				continue;
+			if (!cpu_online(cpu) && num_online_cpus() < max_online)
+				cpu_up(cpu);
+		}
+	}
 
 	down_timer = 0;
 }
