@@ -28,13 +28,8 @@ static void led_set_software_blink(struct led_classdev *led_cdev,
 				   unsigned long delay_on,
 				   unsigned long delay_off)
 {
-	int current_brightness;
-
-	current_brightness = led_get_brightness(led_cdev);
-	if (current_brightness)
-		led_cdev->blink_brightness = current_brightness;
 	if (!led_cdev->blink_brightness)
-		led_cdev->blink_brightness = led_cdev->max_brightness;
+		led_cdev->blink_brightness = 5;
 
 	led_cdev->blink_delay_on = delay_on;
 	led_cdev->blink_delay_off = delay_off;
