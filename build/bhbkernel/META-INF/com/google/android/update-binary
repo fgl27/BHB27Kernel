@@ -189,6 +189,9 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.modules)" == 1 ]; then
 	    cp /tmp/anykernel/system/libshim_qcopt /system/lib/libshim_qcopt.so;
 	    set_perm_recursive 0 0 0755 0644 /system/lib/libshim_qcopt.so;
 	  fi
+
+	  cp -rf /tmp/anykernel/system/lights.apq8084 /system/lib/hw/lights.apq8084.so;
+	  set_perm_recursive 0 0 0755 0644 /system/lib/hw/lights.apq8084.so;
   fi;
 
   mount -o remount,ro /system;
