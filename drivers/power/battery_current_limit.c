@@ -225,7 +225,7 @@ static int bcl_cpufreq_callback(struct notifier_block *nfb,
 
 	switch (event) {
 	case CPUFREQ_INCOMPATIBLE:
-		if (bcl_vph_state == BCL_LOW_THRESHOLD) {
+		if (bcl_vph_state == BCL_LOW_THRESHOLD && gbcl->bcl_mode != BCL_DEVICE_DISABLED) {
 			max_freq = gbcl->btm_freq_max;
 		}
 		pr_debug("Requesting Max freq:%u for CPU%d\n",
