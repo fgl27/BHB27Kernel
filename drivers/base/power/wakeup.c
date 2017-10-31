@@ -484,11 +484,13 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 			!strcmp(ws->name, "wlan_wake")) ||
 		(!enable_bluedroid_timer_ws &&
 			!strcmp(ws->name, "bluedroid_timer")) ||
+		(!enable_msm_hsic_ws &&
+			!strcmp(ws->name, "msm_hsic")) ||
 		(!enable_bluesleep_ws &&
 			!strcmp(ws->name, "bluesleep")) ||
-		(!enable_bluesleep_ws &&
+		(!enable_timerfd_ws &&
 			!strcmp(ws->name, "[timerfd]")) ||
-		(!enable_bluesleep_ws &&
+		(!enable_netlink_ws &&
 			!strcmp(ws->name, "NETLINK")))) {
 		/*
 		 * let's try and deactivate this wakeup source since the user
