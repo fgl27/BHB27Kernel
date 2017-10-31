@@ -497,10 +497,13 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 		 * clearly doesn't want it. The user is responsible for any
 		 * adverse effects and has been warned about it
 		 */
-		if (ws->active)
+		if (ws->active) {
 			wakeup_source_deactivate(ws);
+			pr_info("wakelock deactivated: %s\n", ws->name);
+                } else pr_info("wakelock already deactivated: %s\n", ws->name);
+
 		return;
-	}
+	}//else if (strcmp(ws->name, "event1") && strcmp(ws->name, "eventpoll") && strcmp(ws->name, "KeyEvents")) pr_info("wakelock activated: %s\n", ws->name);
 
 	/*
 	 * active wakeup source should bring the system
