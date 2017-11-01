@@ -38,6 +38,9 @@ module_param(enable_netlink_ws, bool, 0644);
 static bool enable_debug_ws = false;
 module_param(enable_debug_ws, bool, 0644);
 
+static char disable_test_ws[256];
+module_param_string(disable_test_ws, disable_test_ws, sizeof(disable_test_ws), 0644);
+
 #include "power.h"
 
 /*
@@ -490,6 +493,7 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 			!strcmp(ws->name, "msm_hsic")) ||
 		(!enable_bluesleep_ws &&
 			!strcmp(ws->name, "bluesleep")) ||
+		(!strncmp(ws->name, disable_test_ws, strlen(ws->name))) ||
 		(!enable_timerfd_ws &&
 			!strcmp(ws->name, "[timerfd]")) ||
 		(!enable_netlink_ws &&
