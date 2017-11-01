@@ -35,6 +35,8 @@ static bool enable_timerfd_ws = true;
 module_param(enable_timerfd_ws, bool, 0644);
 static bool enable_netlink_ws = true;
 module_param(enable_netlink_ws, bool, 0644);
+static bool enable_debug_ws = false;
+module_param(enable_debug_ws, bool, 0644);
 
 #include "power.h"
 
@@ -500,10 +502,11 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 		if (ws->active) {
 			wakeup_source_deactivate(ws);
 			pr_info("wakelock deactivated: %s\n", ws->name);
-                } else pr_info("wakelock already deactivated: %s\n", ws->name);
+                }
 
 		return;
-	}//else if (strcmp(ws->name, "event1") && strcmp(ws->name, "eventpoll") && strcmp(ws->name, "KeyEvents")) pr_info("wakelock activated: %s\n", ws->name);
+	} else if (enable_debug_ws && strcmp(ws->name, "event1") && strcmp(ws->name, "eventpoll") && strcmp(ws->name, "KeyEvents"))
+		pr_info("wakelock activated: %s\n", ws->name);
 
 	/*
 	 * active wakeup source should bring the system
