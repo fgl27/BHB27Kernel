@@ -62,6 +62,7 @@ struct led_classdev {
 	int		(*blink_set)(struct led_classdev *led_cdev,
 				     unsigned long *delay_on,
 				     unsigned long *delay_off);
+	struct workqueue_struct	*workqueue;
 
 	struct device		*dev;
 	struct list_head	 node;			/* LED Device list */
