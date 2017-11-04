@@ -237,6 +237,14 @@ int led_classdev_register(struct device *parent, struct led_classdev *led_cdev)
 #ifdef CONFIG_LEDS_TRIGGERS
 	init_rwsem(&led_cdev->trigger_lock);
 #endif
+
+	led_cdev->workqueue = alloc_workqueue(led_cdev->name, WQ_HIGHPRI | WQ_UNBOUND |
+					  WQ_MEM_RECLAIM, 1);
+	if (!led_cdev->workqueue) {
+		destroy_workqueue(led_cdev->workqueue);
+		return -ENOMEM;
+	}
+
 	/* add to the list of leds */
 	down_write(&leds_list_lock);
 	list_add_tail(&led_cdev->node, &leds_list);
@@ -288,6 +296,7 @@ void led_classdev_unregister(struct led_classdev *led_cdev)
 	led_stop_software_blink(led_cdev);
 	led_set_brightness(led_cdev, LED_OFF);
 
+	destroy_workqueue(led_cdev->workqueue);
 	device_unregister(led_cdev->dev);
 
 	down_write(&leds_list_lock);
