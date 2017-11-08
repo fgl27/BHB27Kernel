@@ -886,7 +886,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 	struct cpu_dbs_info_s *j_dbs_info;
 
 	unsigned int up_threshold;
-	unsigned max_load = 0, avg_load = 0;
+	unsigned max_load = 0, avg_load = 0, load = 0;
 	unsigned avg_load_freq = 0;
 	unsigned num_of_cpus = 0;
 
@@ -964,13 +964,11 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 	avg_load = avg_load / num_of_cpus;
 	max_load = max_load / num_of_cpus;
 
-	cpufreq_notify_utilization(policy, max_load);
+	if (max_load > avg_load) load = (avg_load + max_load) / 2;
+	else load = avg_load;
 
-	if (max_load > avg_load)
-		avg_load_freq = (avg_load + max_load) / 2 * policy->cur;
-	else
-		avg_load_freq = avg_load * policy->cur;
-
+	avg_load_freq = load * policy->cur;
+	cpufreq_notify_utilization(policy, load);
 
 	// normal path up
 	if (dbs_tuners_ins.shortcut)
