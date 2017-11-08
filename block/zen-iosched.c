@@ -3,7 +3,8 @@
  * Primarily based on Noop, deadline, and SIO IO schedulers.
  *
  * Copyright (C) 2012 Brandon Berhent <bbedward@gmail.com>
- *
+ *           (C) 2014 LoungeKatt <twistedumbrella@gmail.com>
+ *           (C) 2015 Fixes to stop crashing on 3.10 by Matthew Alex <matthewalex@outlook.com>
  * FCFS, dispatches are back-inserted, deadlines ensure fairness.
  * Should work best with devices where there is no travel delay.
  */
@@ -91,7 +92,7 @@ zen_expired_request(struct zen_data *zdata, int ddir)
                 return NULL;
 
         rq = rq_entry_fifo(zdata->fifo_list[ddir].next);
-        if (time_after(jiffies, rq_fifo_time(rq)))
+        if (time_after_eq(jiffies, rq_fifo_time(rq)))
                 return rq;
 
         return NULL;
@@ -172,15 +173,16 @@ static int zen_init_queue(struct request_queue *q, struct elevator_type *e)
 	}
 	eq->elevator_data = zdata;
 
+	spin_lock_irq(q->queue_lock);
+	q->elevator = eq;
+	spin_unlock_irq(q->queue_lock);
+	
 	INIT_LIST_HEAD(&zdata->fifo_list[SYNC]);
 	INIT_LIST_HEAD(&zdata->fifo_list[ASYNC]);
 	zdata->fifo_expire[SYNC] = sync_expire;
 	zdata->fifo_expire[ASYNC] = async_expire;
 	zdata->fifo_batch = fifo_batch;
 
-	spin_lock_irq(q->queue_lock);
-	q->elevator = eq;
-	spin_unlock_irq(q->queue_lock);
 	return 0;
 }
 
@@ -285,4 +287,4 @@ module_exit(zen_exit);
 MODULE_AUTHOR("Brandon Berhent");
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("Zen IO scheduler");
-MODULE_VERSION("1.0");
+MODULE_VERSION("1.1");
