@@ -20,12 +20,12 @@
 #include <linux/sysfs.h>
 #include <linux/mutex.h>
 #include <linux/writeback.h>
-#include <linux/fb.h>
+#include <linux/state_notifier.h>
 
 #define DYN_FSYNC_VERSION_MAJOR 1
 #define DYN_FSYNC_VERSION_MINOR 1
 
-struct notifier_block dyn_fsync_fb_notif;
+static struct notifier_block notif;
 
 /*
  * fsync_mutex protects dyn_fsync_active during fb suspend / resume
@@ -106,41 +106,33 @@ static void dyn_fsync_suspend(void)
 	pr_info("%s: flushing work finished.\n", __FUNCTION__);
 }
 
-static int dyn_fsync_fb_notifier_callback(struct notifier_block *self,
+static int state_notifier_callback(struct notifier_block *this,
 				unsigned long event, void *data)
 {
-	struct fb_event *evdata = data;
-	int *blank;
-
-	if (event == FB_EVENT_BLANK) {
-		blank = evdata->data;
-
-		switch (*blank) {
-		case FB_BLANK_UNBLANK:
+	switch (event) {
+		case STATE_NOTIFIER_ACTIVE:
 			dyn_sync_scr_suspended = false;
 			break;
-		case FB_BLANK_POWERDOWN:
+		case STATE_NOTIFIER_SUSPEND:
 			dyn_sync_scr_suspended = true;
 			if (dyn_fsync_active)
 				dyn_fsync_suspend();
 			break;
-		}
-	}
-
-	return 0;
+		default:
+			break;
+  	}
+  
+  	return NOTIFY_OK;
 }
-
-struct notifier_block dyn_fsync_fb_notif = {
-	.notifier_call = dyn_fsync_fb_notifier_callback,
-};
 
 static int __init dyn_fsync_init(void)
 {
-	int ret;
+	int ret = 0;
 
-	ret = fb_register_client(&dyn_fsync_fb_notif);
+	notif.notifier_call = state_notifier_callback;
+	ret = state_register_client(&notif);
 	if (ret) {
-		pr_info("%s fb register failed!\n", __FUNCTION__);
+		pr_warn("%s failed to register state notifier callback!\n", __FUNCTION__);
 		return ret;
 	}
 
@@ -164,7 +156,8 @@ static void __exit dyn_fsync_exit(void)
 {
 	if (dyn_fsync_kobj != NULL)
 		kobject_put(dyn_fsync_kobj);
-	fb_unregister_client(&dyn_fsync_fb_notif);
+	state_unregister_client(&notif);
+	notif.notifier_call = NULL;
 }
 
 module_init(dyn_fsync_init);
