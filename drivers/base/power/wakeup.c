@@ -35,8 +35,6 @@ static bool enable_timerfd_ws = true;
 module_param(enable_timerfd_ws, bool, 0644);
 static bool enable_netlink_ws = true;
 module_param(enable_netlink_ws, bool, 0644);
-static bool enable_debug_ws = false;
-module_param(enable_debug_ws, bool, 0644);
 
 static char disable_test_ws[256];
 module_param_string(disable_test_ws, disable_test_ws, sizeof(disable_test_ws), 0644);
@@ -509,8 +507,7 @@ static void wakeup_source_activate(struct wakeup_source *ws)
                 }
 
 		return;
-	} else if (enable_debug_ws && strcmp(ws->name, "event1") && strcmp(ws->name, "eventpoll") && strcmp(ws->name, "KeyEvents"))
-		pr_info("wakelock activated: %s\n", ws->name);
+	}
 
 	/*
 	 * active wakeup source should bring the system
