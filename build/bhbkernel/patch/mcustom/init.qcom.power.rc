@@ -137,6 +137,10 @@ on property:sys.boot_completed=1
     # Ena state notifier
     write /sys/module/state_notifier/parameters/enabled 1
 
+    # lmk
+    write /sys/module/lowmemorykiller/parameters/minfree 44032,48640,53248,57856,62464,71680
+
+
 service postinitrr_sh /system/bin/sh /sbin/post_init_rr.sh
     class main
     user root

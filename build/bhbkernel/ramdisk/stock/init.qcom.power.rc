@@ -139,3 +139,6 @@ on property:sys.boot_completed=1
 
     # bcl mitigation-freq
     write /sys/devices/qcom,bcl.38/freq_max 1267200
+
+    # lmk
+    write /sys/module/lowmemorykiller/parameters/minfree 44032,48640,53248,57856,62464,71680
