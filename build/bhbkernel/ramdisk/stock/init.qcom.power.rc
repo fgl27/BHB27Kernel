@@ -40,6 +40,10 @@ on init
     write /sys/devices/system/cpu/cpu3/cpufreq/scaling_max_freq 2649600
 
 on boot
+
+    # wireguard module
+    insmod /system/lib/modules/wireguard.ko
+
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
     restorecon_recursive /sys/devices/system/cpu/cpufreq/interactive
     chown system system /sys/devices/system/cpu/cpufreq/interactive/timer_rate
