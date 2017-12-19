@@ -1284,7 +1284,8 @@ char *clock(char *buf, char *end, struct clk *clk, struct printf_spec spec,
  *        (legacy clock framework) of the clock
  * - 'Cr' For a clock, it prints the current rate of the clock
  *
- * ** Please update also Documentation/printk-formats.txt when making changes **
+ * ** When making changes please also update:
+ *	Documentation/core-api/printk-formats.rst
  *
  * Note: The difference between 'S' and 'F' is that on ia64 and ppc64
  * function pointers are really function descriptors, which contain a
