@@ -177,18 +177,6 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.modules)" == 1 ]; then
 #  cp -rf /tmp/anykernel/system/etc/audio_policy.conf /system/etc/audio_policy.conf;
 #  set_perm_recursive 0 0 0755 0644 /system/etc/audio_policy.conf;
 #  chcon -R 'u:object_r:system_file:s0' /system/etc/audio_policy.conf;
-  # wireguard
-  cp -rf /tmp/anykernel/system/wg /system/xbin/wg;
-  set_perm_recursive 0 2000 0755 0755 /system/xbin/wg;
-  chcon -R 'u:object_r:system_file:s0' /system/xbin/wg;
-
-  cp -rf /tmp/anykernel/system/wg-quick /system/xbin/wg-quick;
-  set_perm_recursive 0 2000 0755 0755 /system/xbin/wg-quick;
-  chcon -R 'u:object_r:system_file:s0' /system/xbin/wg-quick;
-
-  cp -rf /tmp/anykernel/system/wireguard_addonsd /system/addon.d/40-wireguard.sh;
-  set_perm_recursive 0 0 0755 0755 /system/addon.d/40-wireguard.sh;
-
   mkdir -pm 700 /data/misc/wireguard
   # wireguard end
 
