@@ -204,7 +204,9 @@ sysBbtProcessMessageCore(tpAniSirGlobal pMac, tpSirMsgQ pMsg, tANI_U32 type,
             }
             if (subType == SIR_MAC_MGMT_DISASSOC)
             {
+#ifdef BUILD_DEBUG_VERSION
                 tpSirMacMgmtHdr pMacHdr = WDA_GET_RX_MAC_HEADER(pBd);
+#endif
                 PELOGE(sysLog( pMac, LOGE,
                        FL("DISASSOC frame allowed: "
                        "da: " MAC_ADDRESS_STR ", "
