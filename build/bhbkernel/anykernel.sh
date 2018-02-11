@@ -349,7 +349,7 @@ seinject() {
     $bin/sepolicy-inject-N $1 $ramdisk/sepolicy;
   fi;
 }
-b
+
 ## end methods
 
 ## AnyKernel permissions
@@ -362,16 +362,17 @@ dump_boot;
 # begin ramdisk changes
 
 if [ "$romtype" == 0 ]; then
+	#Custom Nougat
 	replace_string init.recovery.qcom.rc "interactive" "ondemand" "interactive"
-	replace_file init.qcom.power.rc 0750 init.qcom.power.rc
-	replace_file init.qcom.rc 0750 init.qcom.rc
-	replace_file fstab.qcom 0640 fstab.qcom
+	insert_line init.qcom.rc "/sys/module/state_notifier/parameters/enabled 1" after "on property:sys.boot_completed=1" "    write /sys/module/state_notifier/parameters/enabled 1"
 elif [ "$romtype" == 1 ]; then
+	#Custom Marshmallow
 	replace_string init.recovery.qcom.rc "interactive" "ondemand" "interactive"
 	replace_file init.qcom.power.rc 0750 init.qcom.power.rc
 	replace_file init.qcom.rc 0750 init.qcom.rc
 	replace_file fstab.qcom 0640 fstab.qcom
 elif [ "$romtype" == 2 ]; then
+	#Stock Marshmallow
 	replace_string init.target.rc  "min_cores=4" "min_cores=1" "min_cores=4"
 	insert_line init.qcom.rc "init.qcom.power.rc" after "import init.target.rc" "import init.qcom.power.rc"
 	replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=25%,swapprio=10"
