@@ -365,6 +365,7 @@ if [ "$romtype" == 0 ]; then
 	#Custom Nougat
 	replace_string init.recovery.qcom.rc "interactive" "ondemand" "interactive"
 	insert_line init.qcom.rc "/sys/module/state_notifier/parameters/enabled 1" after "on property:sys.boot_completed=1" "    write /sys/module/state_notifier/parameters/enabled 1"
+	insert_line init.qcom.rc "/system/lib/modules/wireguard.ko" before "insmod /system/lib/modules/touchx.ko" "    insmod /system/lib/modules/wireguard.ko"
 elif [ "$romtype" == 1 ]; then
 	#Custom Marshmallow
 	replace_string init.recovery.qcom.rc "interactive" "ondemand" "interactive"
