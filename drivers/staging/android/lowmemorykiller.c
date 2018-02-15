@@ -37,25 +37,18 @@
 #include <linux/mm.h>
 #include <linux/oom.h>
 #include <linux/sched.h>
-#include <linux/swap.h>
 #include <linux/rcupdate.h>
 #include <linux/notifier.h>
 #include <linux/mutex.h>
 #include <linux/delay.h>
 #include <linux/swap.h>
 #include <linux/fs.h>
-#include <linux/show_mem_notifier.h>
-
-#include <trace/events/memkill.h>
 
 #ifdef CONFIG_HIGHMEM
 #define _ZONE ZONE_HIGHMEM
 #else
 #define _ZONE ZONE_NORMAL
 #endif
-
-#define CREATE_TRACE_POINTS
-#include "trace/lowmemorykiller.h"
 
 static uint32_t lowmem_debug_level = 1;
 static short lowmem_adj[6] = {
@@ -125,66 +118,47 @@ int can_use_cma_pages(gfp_t gfp_mask)
 	return can_use;
 }
 
-struct zone_avail {
-	unsigned long free;
-	unsigned long file;
-};
-
-
 void tune_lmk_zone_param(struct zonelist *zonelist, int classzone_idx,
 					int *other_free, int *other_file,
-					int use_cma_pages,
-				struct zone_avail zall[][MAX_NR_ZONES])
+					int use_cma_pages)
 {
 	struct zone *zone;
 	struct zoneref *zoneref;
 	int zone_idx;
 
 	for_each_zone_zonelist(zone, zoneref, zonelist, MAX_NR_ZONES) {
-		struct zone_avail *za;
-		int node_idx = zone_to_nid(zone);
-
 		zone_idx = zonelist_zone_idx(zoneref);
-		za = &zall[node_idx][zone_idx];
-		za->free = zone_page_state(zone, NR_FREE_PAGES);
-		za->file = zone_page_state(zone, NR_FILE_PAGES)
-					- zone_page_state(zone, NR_SHMEM);
 		if (zone_idx == ZONE_MOVABLE) {
-			if (!use_cma_pages) {
-				unsigned long free_cma = zone_page_state(zone,
-						NR_FREE_CMA_PAGES);
-				za->free -= free_cma;
-				*other_free -= free_cma;
-			}
+			if (!use_cma_pages)
+				*other_free -=
+				    zone_page_state(zone, NR_FREE_CMA_PAGES);
 			continue;
 		}
 
 		if (zone_idx > classzone_idx) {
 			if (other_free != NULL)
-				*other_free -= za->free;
+				*other_free -= zone_page_state(zone,
+							       NR_FREE_PAGES);
 			if (other_file != NULL)
-				*other_file -= za->file;
-			za->free = za->file = 0;
+				*other_file -= zone_page_state(zone,
+							       NR_FILE_PAGES)
+					      - zone_page_state(zone, NR_SHMEM);
 		} else if (zone_idx < classzone_idx) {
 			if (zone_watermark_ok(zone, 0, 0, classzone_idx, 0)) {
-				unsigned long lowmem_reserve =
-					  zone->lowmem_reserve[classzone_idx];
 				if (!use_cma_pages) {
-					unsigned long free_cma =
-						zone_page_state(zone,
-							NR_FREE_CMA_PAGES);
-					unsigned long delta =
-						min(lowmem_reserve + free_cma,
-							za->free);
-					*other_free -= delta;
-					za->free -= delta;
+					*other_free -= min(
+					  zone->lowmem_reserve[classzone_idx] +
+					  zone_page_state(
+					    zone, NR_FREE_CMA_PAGES),
+					  zone_page_state(
+					    zone, NR_FREE_PAGES));
 				} else {
-					*other_free -= lowmem_reserve;
-					za->free -= lowmem_reserve;
+					*other_free -=
+					  zone->lowmem_reserve[classzone_idx];
 				}
 			} else {
-				*other_free -= za->free;
-				za->free = 0;
+				*other_free -=
+					   zone_page_state(zone, NR_FREE_PAGES);
 			}
 		}
 	}
@@ -219,8 +193,7 @@ void adjust_gfp_mask(gfp_t *unused)
 }
 #endif
 
-void tune_lmk_param(int *other_free, int *other_file, struct shrink_control *sc,
-				struct zone_avail zall[][MAX_NR_ZONES])
+void tune_lmk_param(int *other_free, int *other_file, struct shrink_control *sc)
 {
 	gfp_t gfp_mask;
 	struct zone *preferred_zone;
@@ -228,7 +201,6 @@ void tune_lmk_param(int *other_free, int *other_file, struct shrink_control *sc,
 	enum zone_type high_zoneidx, classzone_idx;
 	unsigned long balance_gap;
 	int use_cma_pages;
-	struct zone_avail *za;
 
 	gfp_mask = sc->gfp_mask;
 	adjust_gfp_mask(&gfp_mask);
@@ -238,7 +210,6 @@ void tune_lmk_param(int *other_free, int *other_file, struct shrink_control *sc,
 	first_zones_zonelist(zonelist, high_zoneidx, NULL, &preferred_zone);
 	classzone_idx = zone_idx(preferred_zone);
 	use_cma_pages = can_use_cma_pages(gfp_mask);
-	za = &zall[zone_to_nid(preferred_zone)][classzone_idx];
 
 	balance_gap = min(low_wmark_pages(preferred_zone),
 			  (preferred_zone->present_pages +
@@ -250,41 +221,37 @@ void tune_lmk_param(int *other_free, int *other_file, struct shrink_control *sc,
 			  balance_gap, 0, 0))) {
 		if (lmk_fast_run)
 			tune_lmk_zone_param(zonelist, classzone_idx, other_free,
-				       other_file, use_cma_pages, zall);
+				       other_file, use_cma_pages);
 		else
 			tune_lmk_zone_param(zonelist, classzone_idx, other_free,
-				       NULL, use_cma_pages, zall);
+				       NULL, use_cma_pages);
 
 		if (zone_watermark_ok(preferred_zone, 0, 0, _ZONE, 0)) {
-			unsigned long lowmem_reserve =
-				preferred_zone->lowmem_reserve[_ZONE];
 			if (!use_cma_pages) {
-				unsigned long free_cma = zone_page_state(
-					preferred_zone, NR_FREE_CMA_PAGES);
-				unsigned long delta = min(lowmem_reserve +
-					free_cma, za->free);
-				*other_free -= delta;
-				za->free -= delta;
+				*other_free -= min(
+				  preferred_zone->lowmem_reserve[_ZONE]
+				  + zone_page_state(
+				    preferred_zone, NR_FREE_CMA_PAGES),
+				  zone_page_state(
+				    preferred_zone, NR_FREE_PAGES));
 			} else {
-				*other_free -= lowmem_reserve;
-				za->free -= lowmem_reserve;
+				*other_free -=
+				  preferred_zone->lowmem_reserve[_ZONE];
 			}
 		} else {
-			*other_free -= za->free;
-			za->free = 0;
+			*other_free -= zone_page_state(preferred_zone,
+						      NR_FREE_PAGES);
 		}
 
 		lowmem_print(4, "lowmem_shrink of kswapd tunning for highmem "
 			     "ofree %d, %d\n", *other_free, *other_file);
 	} else {
 		tune_lmk_zone_param(zonelist, classzone_idx, other_free,
-			       other_file, use_cma_pages, zall);
+			       other_file, use_cma_pages);
 
 		if (!use_cma_pages) {
-			unsigned long free_cma = zone_page_state(preferred_zone,
-						NR_FREE_CMA_PAGES);
-			*other_free -= free_cma;
-			za->free -= free_cma;
+			*other_free -=
+			  zone_page_state(preferred_zone, NR_FREE_CMA_PAGES);
 		}
 
 		lowmem_print(4, "lowmem_shrink tunning for others ofree %d, "
@@ -307,16 +274,6 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 	int other_free;
 	int other_file;
 	unsigned long nr_to_scan = sc->nr_to_scan;
-	struct zone_avail zall[MAX_NUMNODES][MAX_NR_ZONES];
-
-	rcu_read_lock();
-	tsk = current->group_leader;
-	if ((tsk->flags & PF_EXITING) && test_task_flag(tsk, TIF_MEMDIE)) {
-		set_tsk_thread_flag(current, TIF_MEMDIE);
-		rcu_read_unlock();
-		return 0;
-	}
-	rcu_read_unlock();
 
 	if (nr_to_scan > 0) {
 		if (mutex_lock_interruptible(&scan_mutex) < 0)
@@ -329,13 +286,11 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 		global_page_state(NR_FILE_PAGES))
 		other_file = global_page_state(NR_FILE_PAGES) -
 						global_page_state(NR_SHMEM) -
-						global_page_state(NR_UNEVICTABLE) -
 						total_swapcache_pages();
 	else
 		other_file = 0;
 
-	memset(zall, 0, sizeof(zall));
-	tune_lmk_param(&other_free, &other_file, sc, zall);
+	tune_lmk_param(&other_free, &other_file, sc);
 
 	if (lowmem_adj_size < array_size)
 		array_size = lowmem_adj_size;
@@ -381,15 +336,9 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 
 		if (time_before_eq(jiffies, lowmem_deathpending_timeout)) {
 			if (test_task_flag(tsk, TIF_MEMDIE)) {
-				int same_tgid = same_thread_group(current, tsk);
-
 				rcu_read_unlock();
 				/* give the system time to free up the memory */
-				if (!same_tgid)
-					msleep_interruptible(20);
-				else
-					set_tsk_thread_flag(current,
-								TIF_MEMDIE);
+				msleep_interruptible(20);
 				mutex_unlock(&scan_mutex);
 				return 0;
 			}
@@ -401,13 +350,6 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 
 		oom_score_adj = p->signal->oom_score_adj;
 		if (oom_score_adj < min_score_adj) {
-			task_unlock(p);
-			continue;
-		}
-		if (fatal_signal_pending(p) ||
-				((p->flags & PF_EXITING) &&
-					test_tsk_thread_flag(p, TIF_MEMDIE))) {
-			lowmem_print(2, "skip slow dying process %d\n", p->pid);
 			task_unlock(p);
 			continue;
 		}
@@ -429,13 +371,6 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 			     p->comm, p->pid, oom_score_adj, tasksize);
 	}
 	if (selected) {
-		int i, j;
-		char zinfo[ZINFO_LENGTH];
-		char *p = zinfo;
-		long cache_size = other_file * (long)(PAGE_SIZE / 1024);
-		long cache_limit = minfree * (long)(PAGE_SIZE / 1024);
-		long free = other_free * (long)(PAGE_SIZE / 1024);
-		trace_lowmemory_kill(selected, cache_size, cache_limit, free);
 		lowmem_print(1, "Killing '%s' (%d), adj %hd,\n" \
 				"   to free %ldkB on behalf of '%s' (%d) because\n" \
 				"   cache %ldkB is below limit %ldkB for oom_score_adj %hd\n" \
@@ -444,34 +379,13 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 			     selected_oom_score_adj,
 			     selected_tasksize * (long)(PAGE_SIZE / 1024),
 			     current->comm, current->pid,
-			     cache_size, cache_limit,
+			     other_file * (long)(PAGE_SIZE / 1024),
+			     minfree * (long)(PAGE_SIZE / 1024),
 			     min_score_adj,
-			     free);
-
-		if (lowmem_debug_level >= 2 && selected_oom_score_adj == 0) {
-			show_mem_call_notifiers();
-		}
-
+			     other_free * (long)(PAGE_SIZE / 1024));
 		lowmem_deathpending_timeout = jiffies + HZ;
-
-		/* Due to MotoCare parser can't handle unfixed column,
-		 * show all zones info even its free & file are zero.
-		 * it will show as the following examples:
-		 *   0:0:756:1127 0:1:0:0 0:2:0:0
-		 *   0:0:767:322 0:1:152:2364 0:2:0:0
-		 */
-		for (i = 0; i < MAX_NUMNODES; i++)
-			for (j = 0; j < MAX_NR_ZONES; j++)
-				p += snprintf(p, ZINFO_DIGITS,
-					"%d:%d:%lu:%lu ", i, j,
-					zall[i][j].free,
-					zall[i][j].file);
-
-		trace_lmk_kill(selected->pid, selected->comm,
-				selected_oom_score_adj, selected_tasksize,
-				min_score_adj, sc->gfp_mask, zinfo);
-		set_tsk_thread_flag(selected, TIF_MEMDIE);
 		send_sig(SIGKILL, selected, 0);
+		set_tsk_thread_flag(selected, TIF_MEMDIE);
 		rem -= selected_tasksize;
 		rcu_read_unlock();
 		/* give the system time to free up the memory */
