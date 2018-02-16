@@ -688,7 +688,7 @@ static ssize_t dt2w_time_dump(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
 	sscanf(buf, "%d ",&dt2w_time);
-	if (dt2w_time < DT2W_TIME || dt2w_time > (DT2W_TIME*2))
+	if (dt2w_time < DT2W_TIME || dt2w_time > (DT2W_TIME*3))
 		dt2w_time = DT2W_TIME;
 
 	return count;
@@ -751,7 +751,7 @@ static ssize_t sweep_timeout_dump(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
 	sscanf(buf, "%d ",&sweep_timeout);
-	if (sweep_timeout < SWEEP_TIMEOUT || sweep_timeout > (SWEEP_TIMEOUT*2))
+	if (sweep_timeout < SWEEP_TIMEOUT || sweep_timeout > (SWEEP_TIMEOUT*3))
 		sweep_timeout = SWEEP_TIMEOUT;
 
 	return count;
