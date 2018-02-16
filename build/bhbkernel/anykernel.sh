@@ -379,6 +379,8 @@ elif [ "$romtype" == 2 ]; then
 	replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=25%,swapprio=10"
 fi
 
+insert_line init.qcom.rc "/sys/android_touch/dt2w_time 250" after "on property:sys.boot_completed=1" "    write /sys/android_touch/dt2w_time 250"
+
 if [ "$zramsize" != 1 ]; then
 	if [ "$romtype" == 2 ]; then
 		replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=$zramsize,swapprio=10"
