@@ -40,7 +40,7 @@
 #define S2W_DEFAULT		0
 #define S2S_DEFAULT		0
 #define CAMERA_DEFAULT		0
-#define WG_PWRKEY_DUR           50
+#define WG_PWRKEY_DUR           150
 
 /* shamu */
 #define SWEEP_Y_MAX             2559
@@ -55,10 +55,10 @@
 #define SWEEP_X_FINAL           360
 #define SWEEP_Y_NEXT            180
 #define DT2W_FEATHER		150
-#define DT2W_TIME 		80
+#define DT2W_TIME 		150
 
 /* Wake Gestures */
-#define SWEEP_TIMEOUT		100
+#define SWEEP_TIMEOUT		150
 #define TRIGGER_TIMEOUT		160
 #define WAKE_GESTURE		0x0b
 #define SWEEP_RIGHT		0x01
@@ -121,7 +121,7 @@ static void report_gesture(int gest)
 
 	if (pwrtrigger_time[0] - pwrtrigger_time[1] < TRIGGER_TIMEOUT)
 		return;
-	wake_lock_timeout(&dt2w_wakelock, 150);
+	wake_lock_timeout(&dt2w_wakelock, DT2W_TIME);
 	input_report_rel(gesture_dev, WAKE_GESTURE, gest);
 	input_sync(gesture_dev);
 }
@@ -199,7 +199,7 @@ static void new_touch(int x, int y) {
 	x_pre = x;
 	y_pre = y;
 	touch_nr++;
-	wake_lock_timeout(&dt2w_wakelock, 150);
+	wake_lock_timeout(&dt2w_wakelock, DT2W_TIME);
 }
 
 /* Doubletap2wake main function */
@@ -676,7 +676,7 @@ static ssize_t wake_gestures_dump(struct device *dev,
 {
 	sscanf(buf, "%d ", &gestures_switch);
 	if (gestures_switch < 0 || gestures_switch > 1)
-		gestures_switch = 0;	
+		gestures_switch = WG_DEFAULT;	
 	return count;
 }
 
@@ -697,7 +697,7 @@ static ssize_t vib_strength_dump(struct device *dev,
 {
 	sscanf(buf, "%d ",&vib_strength);
 	if (vib_strength < 0 || vib_strength > 90)
-		vib_strength = 20;
+		vib_strength = VIB_STRENGTH;
 
 	return count;
 }
@@ -717,8 +717,8 @@ static ssize_t dt2w_time_dump(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
 	sscanf(buf, "%d ",&dt2w_time);
-	if (dt2w_time < 25 || dt2w_time > 100)
-		dt2w_time = 50;
+	if (dt2w_time < DT2W_TIME || dt2w_time > (DT2W_TIME*2))
+		dt2w_time = DT2W_TIME;
 
 	return count;
 }
@@ -739,7 +739,7 @@ static ssize_t dt2w_feather_x_dump(struct device *dev,
 {
 	sscanf(buf, "%d ",&dt2w_feather_x);
 	if (dt2w_feather_x < 1 || dt2w_feather_x > 500)
-		dt2w_feather_x = 150;
+		dt2w_feather_x = DT2W_FEATHER;
 
 	return count;
 }
@@ -760,7 +760,7 @@ static ssize_t dt2w_feather_y_dump(struct device *dev,
 {
 	sscanf(buf, "%d ",&dt2w_feather_y);
 	if (dt2w_feather_y < 1 || dt2w_feather_y > 500)
-		dt2w_feather_y = 150;
+		dt2w_feather_y = DT2W_FEATHER;
 
 	return count;
 }
@@ -780,8 +780,8 @@ static ssize_t sweep_timeout_dump(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
 	sscanf(buf, "%d ",&sweep_timeout);
-	if (sweep_timeout < 1 || sweep_timeout > 200)
-		sweep_timeout = 30;
+	if (sweep_timeout < SWEEP_TIMEOUT || sweep_timeout > (SWEEP_TIMEOUT*2))
+		sweep_timeout = SWEEP_TIMEOUT;
 
 	return count;
 }
