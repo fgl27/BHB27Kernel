@@ -9,10 +9,10 @@ audio.offload.buffer.size.kb=32
 audio.offload.gapless.enabled=true
 audio.offload.pcm.16bit.enable=true
 
-# ena root and adb by default app only
-persist.sys.root_access=3
-persist.service.adb.enable=1
-persist.service.debuggable=1
+# ena root by default app only
+persist.sys.root_access=1
+
+# Set usb to adb and mtp
 persist.sys.usb.config=mtp,adb
 
 #I included on the rom a power_profile over_under_clock, it will falls back to default if power_profile_ou.xml is missing
