@@ -1,7 +1,8 @@
-! BHB tips Check [how_to_build_this.sh](https://github.com/bhb27/BHB27Kernel/blob/N_c/build/how_to_build_this.sh) to a simple how to build my kernel
+BHB tips Check [how_to_build_this.sh](https://github.com/bhb27/BHB27Kernel/blob/N_c/build/how_to_build_this.sh) to a simple how to build my kernel
+==============
 
-AnyKernel2 - Flashable Zip Template for Kernel Releases with Ramdisk Modifications
-by osm0sis @ xda-developers
+AnyKernel2 - Flashable Zip Template for Kernel Releases with Ramdisk Modifications by osm0sis @ xda-developers
+==============
 
 "AnyKernel is a template for an update.zip that can apply any kernel to any ROM, regardless of ramdisk." - Koush
 
@@ -9,42 +10,42 @@ AnyKernel2 pushes the format even further by allowing kernel developers to modif
 
 A working script based on DirtyV Kernel for Galaxy Nexus (tuna) is included for reference.
 
-// Properties / Variables
+## Properties / Variables
 
-kernel.string=KernelName by YourName @ xda-developers
-do.devicecheck=1
-do.initd=1
-do.modules=1
-do.cleanup=1
-device.name1=maguro
-device.name2=toro
-device.name3=toroplus
-block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;
+	kernel.string=KernelName by YourName @ xda-developers
+	do.devicecheck=1
+	do.initd=1
+	do.modules=1
+	do.cleanup=1
+	device.name1=maguro
+	device.name2=toro
+	device.name3=toroplus
+	block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;
 
-do.devicecheck=1 specified requires at least device.name1 to be present. This should match ro.product.device or ro.build.product for your device. There is support for up to 5 device.name# properties.
+	do.devicecheck=1 specified requires at least device.name1 to be present. This should match ro.product.device or ro.build.product for your device. There is support for up to 5 device.name# properties.
 
-do.initd=1 will create the init.d directory in /system/etc/init.d/ and apply 755 permissions.
+	do.initd=1 will create the init.d directory in /system/etc/init.d/ and apply 755 permissions.
 
-do.modules=1 will push the contents of the module directory to /system/lib/modules/ and apply 644 permissions.
+	do.modules=1 will push the contents of the module directory to /system/lib/modules/ and apply 644 permissions.
 
-do.cleanup=0 will keep the zip from removing it's working directory in /tmp/anykernel - this can be useful if trying to debug in adb shell whether the patches worked correctly. 
+	do.cleanup=0 will keep the zip from removing it's working directory in /tmp/anykernel - this can be useful if trying to debug in adb shell whether the patches worked correctly. 
 
-// Command Methods
+## Command Methods
 
-dump_boot
-backup_file <file>
-replace_string <file> <if search string> <original string> <replacement string>
-replace_section <file> <begin search string> <end search string> <replacement string>
-remove_section <file> <begin search string> <end search string>
-insert_line <file> <if search string> <before|after> <line match string> <inserted line>
-replace_line <file> <line replace string> <replacement line>
-remove_line <file> <line match string>
-prepend_file <file> <if search string> <patch file>
-insert_file <file> <if search string> <before|after> <line match string> <patch file>
-append_file <file> <if search string> <patch file>
-replace_file <file> <permissions> <patch file>
-patch_fstab <fstab file> <mount match name> <fs match type> <block|mount|fstype|options|flags> <original string> <replacement string>
-write_boot
+	dump_boot
+	backup_file <file>
+	replace_string <file> <if search string> <original string> <replacement string>
+	replace_section <file> <begin search string> <end search string> <replacement string>
+	remove_section <file> <begin search string> <end search string>
+	insert_line <file> <if search string> <before|after> <line match string> <inserted line>
+	replace_line <file> <line replace string> <replacement line>
+	remove_line <file> <line match string>
+	prepend_file <file> <if search string> <patch file>
+	insert_file <file> <if search string> <before|after> <line match string> <patch file>
+	append_file <file> <if search string> <patch file>
+	replace_file <file> <permissions> <patch file>
+	patch_fstab <fstab file> <mount match name> <fs match type> <block|mount|fstype|options|flags> <original string> <replacement string>
+	write_boot
 
 "if search string" is the string it looks for to decide whether it needs to add the tweak or not, so generally something to indicate the tweak already exists.
 
@@ -95,9 +96,6 @@ Note: the "begin search string" and "end search string" arguments of replace_sec
 4- Modify the anykernel.sh to add your kernel's name, boot partition location, permissions for included ramdisk files, and use methods for any required ramdisk modifications
 5- zip -r9 UPDATE-AnyKernel2.zip * -x README UPDATE-AnyKernel2.zip
 
-If supporting a recovery that forces zip signature verification (like Cyanogen Recovery) then you will need to also sign your zip using the method I describe here:
-http://forum.xda-developers.com/android/software-hacking/dev-complete-shell-script-flashable-zip-t2934449
-
 Not required, but any tweaks you can't hardcode into the source should be added with a bootscript.sh like is done in the example provided.
 
 
@@ -108,7 +106,7 @@ Have fun!
 Tweak.prop
 ==========
 
-credits for Tweak.prop @kl3 http://forum.xda-developers.com/showthread.php?t=2664332 | https://notabug.org/kl3/tweakprop
+[credits for Tweak.prop @kl3](http://forum.xda-developers.com/showthread.php?t=2664332) [git tweakprop](https://notabug.org/kl3/tweakprop)
 
 To use set "do.buildprop=1" to anykernel.sh
 
@@ -135,11 +133,8 @@ you update your ROM `/system/build.prop` will look completely unchanged ---besid
 Future changes can easily be made to your `tweak.prop` file using any text editor, terminal emulator, adb or
 whatever suits you best.
 
-
 Usage
 -----
-
-See `example.txt` for how to specify certain modifications.
 
 If you're using the git version, simply run `zipit` to create a flashable `tweakprop-${ver}.zip`.
 
@@ -148,36 +143,25 @@ therefore won't search your phone for it. Simpy modify `a/tmp/tweak.prop` and ru
 create a flashable `tweakprop-${ver}a.zip`. Besides that, there is no difference between those zip files
 and their behaviour.
 
-# 	 ======================================
-# 	| Dynamic automated build.prop editing |
-# 	|              --by kl3--              |
-# 	 ======================================
-#
-# Personal file located at /sdcard/0/tweak.prop
-#
-# For help, please create an issue on https://notabug.org/kl3/tweakprop
-# or visit the official XDA-Thread http://forum.xda-developers.com/showthread.php?p=2664332
-#
-# If you want to backup your build.prop before editing, uncomment the following line
-# or specify a custom path. Already existing backup files will be overridden.
-#
+### Dynamic automated build.prop editing by kl3
 
-BACKUP=y|Y|yes|Yes|YES		# creates /sdcard/build.prop.backup since tweak.prop resides there
-#BACKUP=n|N|no|No|NO		# same as commented out, just there for completeness
-#BACKUP=/foo/bar/foo.bar	# chose your own path
+Personal file located at /build/bhbkernel/systemtweak.prop
+For help, please create an issue on [git tweakprop](https://notabug.org/kl3/tweakprop)
+[or visit the official XDA-Thread](http://forum.xda-developers.com/showthread.php?p=2664332)
 
-#
-# simply add your entries below
-#
+If you want to backup your build.prop before editing, uncomment the following line
+or specify a custom path. Already existing backup files will be overridden.
 
-# set exactly this entry even if it overrides the already existing value
-ro.sf.lcd_density=240
+### simply add your entries like the below on tweak.prop file
 
-# remove every entry containing the string "debug.egl"
-!debug.egl
+	# set exactly this entry even if it overrides the already existing value
+	ro.sf.lcd_density=240
 
-# append the string ",ppp0" to the value string of the variable "mobiledata.interfaces" if it exists
-@mobiledata.interfaces|,ppp0
+	# remove every entry containing the string "debug.egl"
+	!debug.egl
 
-# Override the value of the variable "telephony.lteOnCdmaDevice" to "1" if and only if the entry already exists
-$telephony.lteOnCdmaDevice|1
+	# append the string ",ppp0" to the value string of the variable "mobiledata.interfaces" if it exists
+	@mobiledata.interfaces|,ppp0
+
+	# Override the value of the variable "telephony.lteOnCdmaDevice" to "1" if and only if the entry already exists
+	$telephony.lteOnCdmaDevice|1
