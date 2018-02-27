@@ -203,13 +203,19 @@ prop_check() {
 		## remove entry
 		if echo "$line" | grep -q '^\!';
 		then
-			do_Prop_Patching=1;
+			entry=$(echo "${line#?}" | sed -e 's/[\/&]/\\&/g');
+			grep -q "$entry" "$build" && do_Prop_Patching=1;
 		elif echo "$line" | grep -q '^\@';
 		then
-			do_Prop_Patching=1;
+			entry=$(echo "${line#?}" | sed -e 's/[\/&]/\\&/g');
+			var=$(echo "$entry" | cut -d\| -f1);
+			grep -q "$var" "$build" && do_Prop_Patching=1;
 		elif echo "$line" | grep -q '^\$';
 		then
-			do_Prop_Patching=1;
+
+			entry=$(echo "${line#?}" | sed -e 's/[\/&]/\\&/g');
+			var=$(echo "$entry" | cut -d\| -f1);
+			grep -q "$var=" "$build" && do_Prop_Patching=1;
 		else
 			var=$(echo "$line" | cut -d= -f1);
 			if grep -q "$var" "$build";
@@ -219,11 +225,11 @@ prop_check() {
 				do_Prop_Patching=1;
 			fi;
 		fi;
+
 		if [ "$do_Prop_Patching" == 1 ]; then
 			return "$do_Prop_Patching";
 		fi;
 	done;
-	return "$do_Prop_Patching";
 }
 
 ## credits for tweakprop @kl3 http://forum.xda-developers.com/showthread.php?t=2664332 | https://notabug.org/kl3/tweakprop
@@ -235,7 +241,9 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.buildprop)" == 1 ]; then
 	## abort tweak if tweak.prop is not found or is empty
 	if [ -s $tweak ]; then
 
-		ui_print " Checking build.prop patch";
+		build=/system/build.prop;
+		chmod 0666 $build;
+
 		prop_check $tweak;
 		do_Prop_Patching=$?;
 
@@ -286,15 +294,16 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.buildprop)" == 1 ]; then
 						grep -q $(grep "$var" "$tweak") "$build" || (sed "s/^$var=.*$/$line/" -i "$build" && ui_print "..value of \"$var\" overridden from \"$old\" to \"$new\"");
 					## else append entry to $build
 					else
-						echo "
-				$line" >> "$build" && ui_print "..entry \"$line\" added";
+					echo "
+$line" >> "$build" && ui_print "..entry \"$line\" added";
 					fi;
 				fi;
 			done;
 			## trim empty and duplicate lines of $build
 			sed '/^ *$/d' -i "$build";
-			chmod 0644 "$build";
 		fi;## prop_check check end
+
+		chmod 0644 "$build";
 	fi;## tweak.prop check end
 fi;## build prop editor end
 
