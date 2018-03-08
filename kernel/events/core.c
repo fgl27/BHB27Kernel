@@ -844,7 +844,7 @@ static struct perf_event_context *perf_event_ctx_lock(struct perf_event *event)
 
 again:
 	rcu_read_lock();
-	ctx = READ_ONCE(event->ctx);
+	ctx = ACCESS_ONCE(event->ctx);
 	if (!atomic_inc_not_zero(&ctx->refcount)) {
 		rcu_read_unlock();
 		goto again;
@@ -6903,7 +6903,7 @@ __perf_event_ctx_lock_double(struct perf_event *group_leader,
 
 again:
 	rcu_read_lock();
-	gctx = READ_ONCE(group_leader->ctx);
+	gctx = ACCESS_ONCE(group_leader->ctx);
 	if (!atomic_inc_not_zero(&gctx->refcount)) {
 		rcu_read_unlock();
 		goto again;
