@@ -48,7 +48,7 @@ export CROSS_COMPILE=$HOME/android/temp/arm-eabi-4.9-ubertc/bin/arm-eabi-
 #export CROSS_COMPILE=$HOME/android/temp/arm-eabi-8.x-ubertc/bin/arm-eabi-
 #export CROSS_COMPILE=$HOME/android/temp/arm-linaro-linux-gnueabi-7.x/bin/arm-linaro-linux-gnueabi-
 #kernel zip name
-ZIPNAME="BHB27-Kernel-V88.zip";
+ZIPNAME="BHB27-Kernel-V89.zip";
 
 #arch and out folder
 export ARCH=arm
