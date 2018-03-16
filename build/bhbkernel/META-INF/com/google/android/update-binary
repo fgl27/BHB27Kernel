@@ -109,7 +109,7 @@ fi;
 
 ui_print "-----------------------------------------------";
 ui_print "                                               ";
-ui_print "     Version - 8.9 - Marshmallow and Nougat   ";
+ui_print "     Version - 9.0 - Marshmallow and Nougat   ";
 ui_print "          For LOS-Base and Stock ROM            ";
 ui_print "                                               ";
 ui_print "Check XDA Thread, for recommendations help, etc";
