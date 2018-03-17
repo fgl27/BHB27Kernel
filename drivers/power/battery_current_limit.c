@@ -889,11 +889,10 @@ static ssize_t hotplug_mask_store(struct device *dev,
 					struct device_attribute *attr,
 					const char *buf, size_t count)
 {
-	int ret = 0, val = 0;
+	int val = 0;
 
-	ret = convert_to_int(buf, &val);
-	if (ret)
-		return ret;
+	if (!sscanf(buf, "%d", &val))
+		return -EINVAL;
 
 	if (bcl_hotplug_mask == val)
 		return count;
