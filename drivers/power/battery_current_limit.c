@@ -638,10 +638,10 @@ mode_store(struct device *dev, struct device_attribute *attr,
 		pr_err("No gbcl pointer\n");
 		return -EPERM;
 	}
-	if (!strcmp(buf, "enable")) {
+	if (!strncmp(buf, "enable", 6)) {
 		bcl_mode_set(BCL_DEVICE_ENABLED);
 		pr_info("bcl enabled\n");
-	} else if (!strcmp(buf, "disable")){
+	} else if (!strncmp(buf, "disable", 7)) {
 		bcl_mode_set(BCL_DEVICE_DISABLED);
 		pr_info("bcl disabled\n");
 	} else {
