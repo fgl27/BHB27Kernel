@@ -366,6 +366,10 @@ if [ "$romtype" == 0 ]; then
 	replace_string init.recovery.qcom.rc "interactive" "ondemand" "interactive"
 	insert_line init.qcom.rc "/sys/module/state_notifier/parameters/enabled 1" after "on property:sys.boot_completed=1" "    write /sys/module/state_notifier/parameters/enabled 1"
 	insert_line init.qcom.rc "/system/lib/modules/wireguard.ko" before "insmod /system/lib/modules/touchx.ko" "    insmod /system/lib/modules/wireguard.ko"
+	insert_line init.qcom.rc "on property:init.svc.thermal-engine=running" after "stop start_hci_filter" "on property:init.svc.thermal-engine=running"
+	insert_line init.qcom.rc "    write /sys/module/msm_thermal/parameters/enabled N" after "on property:init.svc.thermal-engine=running" "    write /sys/module/msm_thermal/parameters/enabled N"
+	insert_line init.qcom.rc "on property:init.svc.thermal-engine=stopped" after "write /sys/module/msm_thermal/parameters/enabled N" "on property:init.svc.thermal-engine=stopped"
+	insert_line init.qcom.rc "    write /sys/module/msm_thermal/parameters/enabled Y" after "on property:init.svc.thermal-engine=stopped" "    write /sys/module/msm_thermal/parameters/enabled Y"
 elif [ "$romtype" == 1 ]; then
 	#Custom Marshmallow
 	replace_string init.recovery.qcom.rc "interactive" "ondemand" "interactive"
