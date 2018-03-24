@@ -2324,8 +2324,6 @@ static void thermal_subsystem_init(void)
 	hotplug_init();
 	freq_mitigation_init();
 	thermal_monitor_init();
-	msm_thermal_add_cx_nodes();
-	msm_thermal_add_gfx_nodes();
 }
 
 static int __ref set_enabled(const char *val, const struct kernel_param *kp)
@@ -3517,6 +3515,8 @@ int __init msm_thermal_late_init(void)
 	msm_thermal_add_psm_nodes();
 	msm_thermal_add_vdd_rstr_nodes();
 	msm_thermal_add_stat_nodes();
+        msm_thermal_add_cx_nodes();
+        msm_thermal_add_gfx_nodes();
 
 	return 0;
 }
