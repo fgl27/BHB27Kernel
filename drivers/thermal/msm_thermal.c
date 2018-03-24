@@ -66,6 +66,8 @@ static struct completion hotplug_notify_complete;
 static struct completion freq_mitigation_complete;
 static struct completion thermal_monitor_complete;
 
+static int cx_phase_created;
+static int gfx_nodes_created;
 static int enabled;
 static int polling_enabled;
 static int rails_cnt;
@@ -2231,6 +2233,7 @@ static int msm_thermal_add_gfx_nodes(void)
 		goto gfx_node_fail;
 	}
 
+        gfx_nodes_created = 1;
 gfx_node_fail:
 	if (ret) {
 		kobject_put(gfx_kobj);
@@ -2280,6 +2283,7 @@ static int msm_thermal_add_cx_nodes(void)
 		goto cx_node_fail;
 	}
 
+        cx_phase_created = 1;
 cx_node_fail:
 	if (ret) {
 		kobject_put(cx_kobj);
@@ -2324,8 +2328,8 @@ static void thermal_subsystem_init(void)
 	hotplug_init();
 	freq_mitigation_init();
 	thermal_monitor_init();
-	msm_thermal_add_cx_nodes();
-	msm_thermal_add_gfx_nodes();
+        if (!cx_phase_created) msm_thermal_add_cx_nodes();
+        if (!gfx_nodes_created) msm_thermal_add_gfx_nodes();
 }
 
 static int __ref set_enabled(const char *val, const struct kernel_param *kp)
