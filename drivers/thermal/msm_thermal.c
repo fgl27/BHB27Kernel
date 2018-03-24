@@ -44,7 +44,6 @@
 #include <soc/qcom/rpm-smd.h>
 #include <soc/qcom/scm.h>
 #include <linux/sched/rt.h>
-#include <linux/suspend.h>
 
 #define MAX_RAILS 5
 #define MAX_THRESHOLD 2
@@ -90,7 +89,6 @@ static bool msm_thermal_probed;
 static bool gfx_phase_ctrl_enabled;
 static bool cx_phase_ctrl_enabled;
 static bool therm_reset_enabled;
-static bool online_core;
 static int *tsens_id_map;
 static DEFINE_MUTEX(vdd_rstr_mutex);
 static DEFINE_MUTEX(psm_mutex);
@@ -1074,48 +1072,13 @@ static void therm_reset_notify(struct therm_threshold *thresh_data)
 }
 
 #ifdef CONFIG_SMP
-static void __ref check_core_control(void)
-{
-	int i = 0;
-	int ret = 0;
-
-	if (core_control_enabled) {
-		if (polling_enabled)
-			schedule_delayed_work(&check_temp_work, 0);
-		return;
-	}
-
-	mutex_lock(&core_control_mutex);
-	for_each_possible_cpu(i) {
-		if (!(cpus_offlined & BIT(i)))
-			continue;
-		cpus_offlined &= ~BIT(i);
-		if (cpu_online(i))
-			continue;
-		ret = cpu_up(i);
-		if (ret) {
-			cpus_offlined |= BIT(i);
-			pr_err("Error %d onlining core %d\n",
-				ret, i);
-		} else {
-			struct device *cpu_device = get_cpu_device(i);
-			kobject_uevent(&cpu_device->kobj, KOBJ_ONLINE);
-			pr_info("Allow Online CPU:%d\n", i);
-		}
-	}
-	mutex_unlock(&core_control_mutex);
-	return;
-}
-
 static void __ref do_core_control(long temp)
 {
 	int i = 0;
 	int ret = 0;
 
-	if (!core_control_enabled) {
-		check_core_control();
+	if (!core_control_enabled)
 		return;
-	}
 
 	mutex_lock(&core_control_mutex);
 	if (msm_thermal_info.core_control_mask &&
@@ -1123,21 +1086,15 @@ static void __ref do_core_control(long temp)
 		for (i = num_possible_cpus(); i > 0; i--) {
 			if (!(msm_thermal_info.core_control_mask & BIT(i)))
 				continue;
-			if (cpus_offlined & BIT(i))
+			if (cpus_offlined & BIT(i) && !cpu_online(i))
 				continue;
-			cpus_offlined |= BIT(i);
-			if (!cpu_online(i))
-				continue;
-			pr_debug("Set Offline: CPU%d Temp: %ld\n",
+			pr_info("Set Offline: CPU%d Temp: %ld\n",
 					i, temp);
 			ret = cpu_down(i);
-			if (ret) {
-				cpus_offlined &= ~BIT(i);
-				pr_err("Error %d offlining core %d\n",
+			if (ret)
+				pr_err("Error %d offline core %d\n",
 					ret, i);
-			} else {
-				pr_info("Set Offline CPU:%d Temp: %ld\n", i, temp);
-			}
+			cpus_offlined |= BIT(i);
 			break;
 		}
 	} else if (msm_thermal_info.core_control_mask && cpus_offlined &&
@@ -1147,7 +1104,7 @@ static void __ref do_core_control(long temp)
 			if (!(cpus_offlined & BIT(i)))
 				continue;
 			cpus_offlined &= ~BIT(i);
-			pr_debug("Allow Online CPU%d Temp: %ld\n",
+			pr_info("Allow Online CPU%d Temp: %ld\n",
 					i, temp);
 			/*
 			 * If this core is already online, then bring up the
@@ -1156,85 +1113,36 @@ static void __ref do_core_control(long temp)
 			if (cpu_online(i))
 				continue;
 			ret = cpu_up(i);
-			if (ret) {
-				cpus_offlined |= BIT(i);
-				pr_err("Error %d onlining core %d\n",
-					ret, i);
-			} else {
-				struct device *cpu_device = get_cpu_device(i);
-				kobject_uevent(&cpu_device->kobj, KOBJ_ONLINE);
-				pr_info("Allow Online CPU:%d Temp: %ld\n", i, temp);
-			}
+			if (ret)
+				pr_err("Error %d online core %d\n",
+						ret, i);
 			break;
 		}
 	}
 	mutex_unlock(&core_control_mutex);
 }
-
-static int msm_thermal_suspend_callback(
-	struct notifier_block *nfb, unsigned long action, void *data)
-{
-	switch (action) {
-	case PM_POST_HIBERNATION:
-	case PM_POST_SUSPEND:
-		if (hotplug_task)
-			complete(&hotplug_notify_complete);
-		else
-			pr_debug("Hotplug task not initialized\n");
-		break;
-
-	default:
-		return NOTIFY_DONE;
-	}
-
-	return NOTIFY_OK;
-}
-
 /* Call with core_control_mutex locked */
 static int __ref update_offline_cores(int val)
 {
 	uint32_t cpu = 0;
 	int ret = 0;
-	uint32_t previous_cpus_offlined = 0;
 
 	if (!core_control_enabled)
 		return 0;
 
-	previous_cpus_offlined = cpus_offlined;
 	cpus_offlined = msm_thermal_info.core_control_mask & val;
 
 	for_each_possible_cpu(cpu) {
-		if (cpus_offlined & BIT(cpu)) {
-			cpus_offlined |= BIT(cpu);
-			if (!cpu_online(cpu))
-				continue;
-			ret = cpu_down(cpu);
-			if (ret) {
-				cpus_offlined &= ~BIT(cpu);
-				pr_err("Error %d offlining core %d\n",
-					ret, cpu);
-			} else {
-				struct device *cpu_device = get_cpu_device(cpu);
-				kobject_uevent(&cpu_device->kobj, KOBJ_OFFLINE);
-				pr_info("Set Offline CPU:%d\n", cpu);
-		        }
-		} else if (online_core && (previous_cpus_offlined & BIT(cpu))) {
-			cpus_offlined &= ~BIT(cpu);
-			if (cpu_online(cpu))
-				continue;
-			ret = cpu_up(cpu);
-			if (ret && ret == notifier_to_errno(NOTIFY_BAD)) {
-				pr_debug("Onlining CPU%d is vetoed\n", cpu);
-			} else if (ret) {
-				cpus_offlined |= BIT(cpu);
-				pr_err("Error %d onlining core %d\n",
-					ret, cpu);
-			} else {
-				struct device *cpu_device = get_cpu_device(cpu);
-				kobject_uevent(&cpu_device->kobj, KOBJ_ONLINE);
-				pr_info("Allow Online CPU:%d\n", cpu);
-			}
-		}
+		if (!(cpus_offlined & BIT(cpu)))
+			continue;
+		if (!cpu_online(cpu))
+			continue;
+		ret = cpu_down(cpu);
+		if (ret)
+			pr_err("Unable to offline CPU%d. err:%d\n",
+				cpu, ret);
+		else
+			pr_debug("Offlined CPU%d\n", cpu);
 	}
 	return ret;
 }
@@ -1268,7 +1176,8 @@ static __ref int do_hotplug(void *data)
 			if (cpus[cpu].offline || cpus[cpu].user_offline)
 				mask |= BIT(cpu);
 		}
-		update_offline_cores(mask);
+		if (mask != cpus_offlined)
+			update_offline_cores(mask);
 		mutex_unlock(&core_control_mutex);
 		sysfs_notify(cc_kobj, NULL, "cpus_offlined");
 	}
@@ -1276,11 +1185,6 @@ static __ref int do_hotplug(void *data)
 	return ret;
 }
 #else
-static void __ref check_core_control(void)
-{
-	return;
-}
-
 static void __ref do_core_control(long temp)
 {
 	return;
@@ -1567,9 +1471,6 @@ static void check_temp(struct work_struct *work)
 	long temp = 0;
 	int ret = 0;
 
- 	if (!msm_thermal_probed)
-		goto reschedule;
-
 	do_therm_reset();
 
 	ret = therm_get_temp(msm_thermal_info.sensor_id, THERM_TSENS_ID, &temp);
@@ -1604,44 +1505,25 @@ reschedule:
 static int __ref msm_thermal_cpu_callback(struct notifier_block *nfb,
 		unsigned long action, void *hcpu)
 {
-	uint32_t cpu;
+	uint32_t cpu = (uint32_t)hcpu;
 
-	if (!core_control_enabled)
-		return NOTIFY_OK;
-
-	cpu = (uint32_t)hcpu;
-
-	switch (action & ~CPU_TASKS_FROZEN) {
-	case CPU_UP_PREPARE:
-		if ((msm_thermal_info.core_control_mask & BIT(cpu)) &&
+	if (action == CPU_UP_PREPARE || action == CPU_UP_PREPARE_FROZEN) {
+		if (core_control_enabled &&
+			(msm_thermal_info.core_control_mask & BIT(cpu)) &&
 			(cpus_offlined & BIT(cpu))) {
 			pr_debug("Preventing CPU%d from coming online.\n",
 				cpu);
-			if (polling_enabled)
-				schedule_delayed_work(&check_temp_work,
-					msecs_to_jiffies(msm_thermal_info.poll_ms));
 			return NOTIFY_BAD;
 		}
-		break;
-	case CPU_ONLINE:
-		if ((msm_thermal_info.core_control_mask & BIT(cpu)) &&
-			(cpus_offlined & BIT(cpu))) {
-			pr_debug("CPU%d online. reevaluate hotplug\n", cpu);
-			if (polling_enabled)
-				schedule_delayed_work(&check_temp_work, 0);
-		}
-		break;
-	default:
-		break;
 	}
 
+	pr_debug("voting for CPU%d to be online\n", cpu);
 	return NOTIFY_OK;
 }
 
 static struct notifier_block __refdata msm_thermal_cpu_notifier = {
 	.notifier_call = msm_thermal_cpu_callback,
 };
-
 static int hotplug_notify(enum thermal_trip_type type, int temp, void *data)
 {
 	struct cpu_info *cpu_node = (struct cpu_info *)data;
@@ -1670,7 +1552,6 @@ static int hotplug_notify(enum thermal_trip_type type, int temp, void *data)
 		pr_err("Hotplug task is not initialized\n");
 	return 0;
 }
-
 /* Adjust cpus offlined bit based on temperature reading. */
 static int hotplug_init_cpu_offlined(void)
 {
@@ -1897,8 +1778,6 @@ init_freq_thread:
 		pr_err("Failed to create frequency mitigation thread. err:%ld\n",
 				PTR_ERR(freq_mitigation_task));
 		return;
-	} else {
-		complete(&freq_mitigation_complete);
 	}
 }
 
@@ -2562,7 +2441,6 @@ static ssize_t __ref store_cc_enabled(struct kobject *kobj,
 		pr_info("Core control disabled\n");
 		unregister_cpu_notifier(&msm_thermal_cpu_notifier);
 	}
-	check_core_control();
 
 done_store_cc:
 	return count;
@@ -2797,7 +2675,6 @@ int msm_thermal_init(struct msm_thermal_data *pdata)
 	if (ret)
 		pr_err("cannot register cpufreq notifier. err:%d\n", ret);
 
-	pm_notifier(msm_thermal_suspend_callback, 0);
 	INIT_DELAYED_WORK(&check_temp_work, check_temp);
 	schedule_delayed_work(&check_temp_work, 0);
 
@@ -3545,12 +3422,6 @@ static int msm_thermal_dev_probe(struct platform_device *pdev)
 	ret = of_property_read_u32(node, key, &data.bootup_freq_step);
 	if (ret)
 		goto fail;
-
-	key = "qcom,online-hotplug-core";
-	if (of_property_read_bool(node, key))
-		online_core = true;
-	else
-		online_core = false;
 
 	key = "qcom,freq-control-mask";
 	ret = of_property_read_u32(node, key, &data.bootup_freq_control_mask);
