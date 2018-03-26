@@ -29,6 +29,8 @@
 #
 # make -j4 -C temp M=$HOME/qcacld-2.0 O=$HOME/tempp ARCH=arm CROSS_COMPILE=$HOME/m/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi- KCFLAGS=-mno-android modules WLAN_ROOT=$HOME/qcacld-2.0 MODNAME=wlan BOARD_PLATFORM=apq8084 CONFIG_QCA_CLD_WLAN=m WLAN_OPEN_SOURCE=1
 #
+#zipsigner.jar source from magisk info here https://forum.xda-developers.com/android/software-hacking/dev-complete-shell-script-flashable-zip-t2934449/post56621542
+#
 ##############################################################################################
 #timer counter
 START=$(date +%s.%N);
@@ -110,14 +112,8 @@ else
 	cp -rf ./drivers/staging/qcacld-2.0/firmware_bin/WCNSS_cfg.dat ./build/bhbkernel/system/etc/firmware/wlan/qca_cld/WCNSS_cfg.dat
 	cp -rf ./build/temp/arch/arm/boot/zImage ./build/bhbkernel/zImage
 	cp -rf ./build/temp/arch/arm/boot/dt.img.lz4 ./build/bhbkernel/dtb
-	rm -rf ./build/bhbkernel/*.zip
-	cd ./build/bhbkernel/
-	zip -r9 BHB27-Kernel * -x README .gitignore modules/.gitignore ZipScriptSign/* ZipScriptSign/bin/* how_to_build_this.sh
-	mv BHB27-Kernel.zip ./ZipScriptSign
-	./ZipScriptSign/sign.sh test BHB27-Kernel.zip
-	rm -rf ./ZipScriptSign/BHB27-Kernel.zip
-	mv ./ZipScriptSign/BHB27-Kernel-signed.zip ./$ZIPNAME
-	cd -
+        7za a -tzip -r build.zip ./bhbkernel/* '-x!README.md'  '-x!*.gitignore'
+        java -jar zipsigner.jar build.zip $ZIPNAME
         rm -rf ./build/bhbkernel/system/etc/wifi/WCNSS_qcom_cfg.ini
         rm -rf ./build/bhbkernel/system/etc/wifi/WCNSS_qcom_wlan_nv.bin
         rm -rf ./build/bhbkernel/system/etc/firmware/wlan/qca_cld/WCNSS_cfg.dat

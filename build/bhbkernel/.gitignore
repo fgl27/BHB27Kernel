@@ -1,5 +1,4 @@
 # kernel zip and images
-*.zip
 *zImage
 *dtb
 !.gitignore
