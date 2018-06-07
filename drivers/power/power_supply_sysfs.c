@@ -13,11 +13,15 @@
 
 #include <linux/ctype.h>
 #include <linux/device.h>
+#include <linux/module.h>
 #include <linux/power_supply.h>
 #include <linux/slab.h>
 #include <linux/stat.h>
 
 #include "power_supply.h"
+
+bool cold_state_disable = false;
+module_param_named(cold_state_disable, cold_state_disable, bool, 0644);
 
 /*
  * This is because the name "current" breaks the device attr macro.
@@ -100,7 +104,7 @@ static ssize_t power_supply_show_property(struct device *dev,
 		return snprintf(buf, strlen(charge_rate[value.intval]) + 2,
 				"%s\n", charge_rate[value.intval]);
 	else if (off == POWER_SUPPLY_PROP_HEALTH)
-		return sprintf(buf, "%s\n", health_text[value.intval]);
+		return sprintf(buf, "%s\n", health_text[cold_state_disable ? 1 : value.intval]);
 	else if (off == POWER_SUPPLY_PROP_TECHNOLOGY)
 		return sprintf(buf, "%s\n", technology_text[value.intval]);
 	else if (off == POWER_SUPPLY_PROP_CAPACITY_LEVEL)

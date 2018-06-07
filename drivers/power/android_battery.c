@@ -192,7 +192,7 @@ static void android_bat_get_temp(struct android_bat_data *battery)
 					batt_temp,
 					battery->pdata->temp_low_threshold);
 				battery->batt_health =
-					POWER_SUPPLY_HEALTH_COLD;
+					cold_state_disable ? POWER_SUPPLY_HEALTH_GOOD : POWER_SUPPLY_HEALTH_COLD;
 			}
 		}
 	}
@@ -436,6 +436,7 @@ static void android_bat_monitor_work(struct work_struct *work)
 		switch (battery->batt_health) {
 		case POWER_SUPPLY_HEALTH_OVERHEAT:
 		case POWER_SUPPLY_HEALTH_COLD:
+			if(cold_state_disable) break;
 		case POWER_SUPPLY_HEALTH_OVERVOLTAGE:
 		case POWER_SUPPLY_HEALTH_DEAD:
 		case POWER_SUPPLY_HEALTH_UNSPEC_FAILURE:

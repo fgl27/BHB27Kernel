@@ -318,7 +318,7 @@ static int wm8350_bat_check_health(struct wm8350 *wm8350)
 	if (reg & WM8350_CHG_BATT_HOT_OVRDE)
 		return POWER_SUPPLY_HEALTH_OVERHEAT;
 
-	if (reg & WM8350_CHG_BATT_COLD_OVRDE)
+	if (!cold_state_disable && (reg & WM8350_CHG_BATT_COLD_OVRDE))
 		return POWER_SUPPLY_HEALTH_COLD;
 
 	return POWER_SUPPLY_HEALTH_GOOD;

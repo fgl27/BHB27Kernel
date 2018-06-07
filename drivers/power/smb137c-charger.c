@@ -889,7 +889,7 @@ static int smb137c_get_property_battery_health(struct smb137c_chip *chip)
 
 	if (val & IRQ_STAT_A_BATT_HOT)
 		return POWER_SUPPLY_HEALTH_OVERHEAT;
-	else if (val & IRQ_STAT_A_BATT_COLD)
+	else if (!cold_state_disable && (val & IRQ_STAT_A_BATT_COLD))
 		return POWER_SUPPLY_HEALTH_COLD;
 
 	return POWER_SUPPLY_HEALTH_GOOD;

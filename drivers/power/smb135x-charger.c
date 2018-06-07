@@ -1015,7 +1015,7 @@ static int smb135x_get_prop_batt_health(struct smb135x_chg *chip,
 	else if (chip->batt_hot)
 		*batt_health = POWER_SUPPLY_HEALTH_OVERHEAT;
 	else if (chip->batt_cold)
-		*batt_health = POWER_SUPPLY_HEALTH_COLD;
+		*batt_health = cold_state_disable ? POWER_SUPPLY_HEALTH_GOOD : POWER_SUPPLY_HEALTH_COLD;
 	else if (chip->batt_warm)
 		*batt_health = POWER_SUPPLY_HEALTH_WARM;
 	else if (chip->batt_cool)
@@ -1036,7 +1036,7 @@ static int smb135x_set_prop_batt_health(struct smb135x_chg *chip, int health)
 		chip->batt_cool = false;
 		break;
 	case POWER_SUPPLY_HEALTH_COLD:
-		chip->batt_cold = true;
+		chip->batt_cold = cold_state_disable ? false : true;
 		chip->batt_hot = false;
 		chip->batt_warm = false;
 		chip->batt_cool = false;
@@ -2028,7 +2028,7 @@ static int smb135x_battery_get_property(struct power_supply *psy,
 		}
 
 		if (val->intval ==  POWER_SUPPLY_HEALTH_COOL) {
-			if (chip->ext_high_temp)
+			if (!cold_state_disable && chip->ext_high_temp)
 				val->intval = POWER_SUPPLY_HEALTH_COLD;
 			else
 				val->intval = POWER_SUPPLY_HEALTH_GOOD;
@@ -2842,7 +2842,7 @@ static void heartbeat_work(struct work_struct *work)
 	if ((batt_health == POWER_SUPPLY_HEALTH_WARM) ||
 	    (batt_health == POWER_SUPPLY_HEALTH_COOL) ||
 	    (batt_health == POWER_SUPPLY_HEALTH_OVERHEAT) ||
-	    (batt_health == POWER_SUPPLY_HEALTH_COLD))
+	    (!cold_state_disable && batt_health == POWER_SUPPLY_HEALTH_COLD))
 		chip->temp_check = smb135x_check_temp_range(chip);
 
 	smb135x_set_chrg_path_temp(chip);
