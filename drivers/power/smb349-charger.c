@@ -734,7 +734,7 @@ static int smb349_get_prop_batt_health(struct smb349_charger *chip)
 
 	if (chip->batt_hot)
 		ret.intval = POWER_SUPPLY_HEALTH_OVERHEAT;
-	else if (chip->batt_cold)
+	else if (!cold_state_disable && chip->batt_cold)
 		ret.intval = POWER_SUPPLY_HEALTH_COLD;
 	else if (chip->batt_warm)
 		ret.intval = POWER_SUPPLY_HEALTH_WARM;

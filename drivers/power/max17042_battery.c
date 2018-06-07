@@ -1037,12 +1037,12 @@ static int max17042_check_temp(struct max17042_chip *chip)
 			temp_state = POWER_SUPPLY_HEALTH_GOOD;
 	} else if (chip->temp_state == POWER_SUPPLY_HEALTH_COOL) {
 		if (batt_temp >=
-		    pdata->cool_temp_c + HYSTERISIS_DEGC)
+		    pdata->cool_temp_c + HYSTERISIS_DEGC || cold_state_disable)
 			/* Cool to Normal */
 			temp_state = POWER_SUPPLY_HEALTH_GOOD;
 		else if (batt_temp <= pdata->cold_temp_c)
 			/* Cool to Cold */
-			temp_state = POWER_SUPPLY_HEALTH_COLD;
+			temp_state = cold_state_disable ? POWER_SUPPLY_HEALTH_GOOD : POWER_SUPPLY_HEALTH_COLD;
 		else
 			/* Stay Cool */
 			temp_state = POWER_SUPPLY_HEALTH_COOL;
@@ -1053,7 +1053,7 @@ static int max17042_check_temp(struct max17042_chip *chip)
 			temp_state = POWER_SUPPLY_HEALTH_COOL;
 		else
 			/* Stay Cold */
-			temp_state = POWER_SUPPLY_HEALTH_COLD;
+			temp_state = cold_state_disable ? POWER_SUPPLY_HEALTH_GOOD : POWER_SUPPLY_HEALTH_COLD;
 	} else if (chip->temp_state == POWER_SUPPLY_HEALTH_OVERHEAT) {
 		if (batt_temp <=
 		    pdata->hot_temp_c - HYSTERISIS_DEGC)

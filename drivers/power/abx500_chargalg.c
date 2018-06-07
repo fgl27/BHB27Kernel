@@ -1133,6 +1133,7 @@ static int abx500_chargalg_get_ext_psy_data(struct device *dev, void *data)
 					di->events.main_thermal_prot = false;
 					break;
 				case POWER_SUPPLY_HEALTH_COLD:
+					if (cold_state_disable) break;
 				case POWER_SUPPLY_HEALTH_OVERHEAT:
 					di->events.main_thermal_prot = true;
 					di->events.mainextchnotok = false;
@@ -1171,6 +1172,7 @@ static int abx500_chargalg_get_ext_psy_data(struct device *dev, void *data)
 					di->events.vbus_ovv = false;
 					break;
 				case POWER_SUPPLY_HEALTH_COLD:
+					if (cold_state_disable) break;
 				case POWER_SUPPLY_HEALTH_OVERHEAT:
 					di->events.usb_thermal_prot = true;
 					di->events.usbchargernotok = false;
@@ -1791,7 +1793,8 @@ static int abx500_chargalg_get_property(struct power_supply *psy,
 		if (di->events.batt_ovv) {
 			val->intval = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
 		} else if (di->events.btemp_underover) {
-			if (di->batt_data.temp <= di->bm->temp_under)
+			if (cold_state_disable) val->intval = POWER_SUPPLY_HEALTH_GOOD;
+			else if (di->batt_data.temp <= di->bm->temp_under)
 				val->intval = POWER_SUPPLY_HEALTH_COLD;
 			else
 				val->intval = POWER_SUPPLY_HEALTH_OVERHEAT;

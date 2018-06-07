@@ -378,4 +378,5 @@ static inline bool power_supply_is_watt_property(enum power_supply_property psp)
 	return 0;
 }
 
+extern bool cold_state_disable;
 #endif /* __LINUX_POWER_SUPPLY_H__ */
