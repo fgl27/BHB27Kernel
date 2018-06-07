@@ -2224,7 +2224,7 @@ get_prop_batt_health(struct qpnp_chg_chip *chip)
 		return POWER_SUPPLY_HEALTH_UNKNOWN;
 	};
 
-	if (BATT_TEMP_OK & batt_health)
+	if (cold_state_disable || (BATT_TEMP_OK & batt_health))
 		return POWER_SUPPLY_HEALTH_GOOD;
 	if (BATT_TEMP_HOT & batt_health)
 		return POWER_SUPPLY_HEALTH_OVERHEAT;

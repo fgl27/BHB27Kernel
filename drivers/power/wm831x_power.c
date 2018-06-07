@@ -364,7 +364,7 @@ static int wm831x_bat_check_health(struct wm831x *wm831x, int *health)
 	}
 
 	if (ret & WM831X_BATT_COLD_STS) {
-		*health = POWER_SUPPLY_HEALTH_COLD;
+		*health = cold_state_disable ? POWER_SUPPLY_HEALTH_GOOD : POWER_SUPPLY_HEALTH_COLD;
 		return 0;
 	}
 
