@@ -37,7 +37,7 @@ cd $source_tree
 git_log_tree() {
 	cd $1
 	git log --oneline --after=$2 --until=$3 | sed 's/^//' | while read string; do
-		temp_one=${string:8}
+		temp_one=$(echo "$string" | sed 's/^[^ ]* //g')
                 temp_two="${temp_one// /%20}"
 		temp_two="${temp_two//(/%28}"
 		temp_two="${temp_two//#/%23}"
@@ -46,7 +46,7 @@ git_log_tree() {
 		temp_two="${temp_two//:/%3A}"
 		temp_two="${temp_two//\'/%27}"
 		temp_two="${temp_two//\`/%60}"
-		echo "* [$string](https://github.com/bhb27/BHB27Kernel/search?q=${temp_two}&type=Commits)" >> $Changelog;
+		echo "* [$temp_one](https://github.com/bhb27/BHB27Kernel/search?q=${temp_two}&type=Commits)" >> $Changelog;
         done
 	cd -  > /dev/null
 	echo >> $Changelog;
