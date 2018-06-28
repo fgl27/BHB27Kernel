@@ -3306,7 +3306,7 @@ static struct of_device_id msm_match_table[] = {
 
 static struct platform_driver msm_tspp_driver = {
 	.probe          = msm_tspp_probe,
-	.remove         = __exit_p(msm_tspp_remove),
+	.remove         = msm_tspp_remove,
 	.driver         = {
 		.name   = "msm_tspp",
 		.pm     = &tspp_dev_pm_ops,
