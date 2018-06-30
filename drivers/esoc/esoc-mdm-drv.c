@@ -182,6 +182,8 @@ static int mdm_subsys_powerup(const struct subsys_desc *crashed_subsys)
 	t = wait_for_completion_timeout(&mdm_drv->boot_done, MDM_BOOT_TIMEOUT);
 	if (!t || mdm_drv->boot_fail) {
 		dev_err(&esoc_clink->dev, "booting failed\n");
+		//TODO remove emergency_restart when boot problems are solved
+		emergency_restart();
 		return -EIO;
 	}
 	return 0;
