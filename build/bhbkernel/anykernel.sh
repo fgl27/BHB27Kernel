@@ -4,9 +4,8 @@
 ## AnyKernel setup
 # EDIFY properties
 kernel.string=BHB27-Kernel by BHB27 @ xda-developers
-do.devicecheck=0
 do.initd=0
-do.modules=1
+do.modules=0
 do.cleanup=1
 do.buildprop=1
 device.name1=quark
@@ -20,22 +19,13 @@ zramsize=1;
 # shell variables
 docmdline=1;
 is_slot_device=0;
-romtype=0;
-sdk=24;
 ## end setup
 
 ## AnyKernel methods (DO NOT CHANGE)
 # set up extracted files and directories
-if [ "$romtype" == 0 ]; then
-	ramdisk=/tmp/anykernel/ramdisk/custom;
-	patch=/tmp/anykernel/patch/custom;
-elif [ "$romtype" == 1 ]; then
-	ramdisk=/tmp/anykernel/ramdisk/mcustom;
-	patch=/tmp/anykernel/patch/mcustom;
-elif [ "$romtype" == 2 ]; then
-	ramdisk=/tmp/anykernel/ramdisk/stock;
-	patch=/tmp/anykernel/patch/stock;
-fi
+ramdisk=/tmp/anykernel/ramdisk/custom;
+patch=/tmp/anykernel/patch/custom;
+
 bin=/tmp/anykernel/tools;
 split_img=/tmp/anykernel/split_img;
 
@@ -343,11 +333,7 @@ patch_fstab() {
 
 # check readme example tools arm only
 seinject() {
-  if [ "$sdk" -lt 24 ]; then
-    $bin/sepolicy-inject $1 $ramdisk/sepolicy;
-  else
     $bin/sepolicy-inject-N $1 $ramdisk/sepolicy;
-  fi;
 }
 
 ## end methods
@@ -361,36 +347,18 @@ dump_boot;
 
 # begin ramdisk changes
 
-if [ "$romtype" == 0 ]; then
-	#Custom Nougat
-	replace_string init.recovery.qcom.rc "interactive" "ondemand" "interactive"
-	insert_line init.qcom.rc "/sys/module/state_notifier/parameters/enabled 1" after "on property:sys.boot_completed=1" "    write /sys/module/state_notifier/parameters/enabled 1"
-	insert_line init.qcom.rc "/system/lib/modules/wireguard.ko" before "insmod /system/lib/modules/touchx.ko" "    insmod /system/lib/modules/wireguard.ko"
-	insert_line init.qcom.rc "on property:init.svc.thermal-engine=running" after "stop start_hci_filter" "on property:init.svc.thermal-engine=running"
-	insert_line init.qcom.rc "    write /sys/module/msm_thermal/parameters/enabled N" after "on property:init.svc.thermal-engine=running" "    write /sys/module/msm_thermal/parameters/enabled N"
-	insert_line init.qcom.rc "on property:init.svc.thermal-engine=stopped" after "write /sys/module/msm_thermal/parameters/enabled N" "on property:init.svc.thermal-engine=stopped"
-	insert_line init.qcom.rc "    write /sys/module/msm_thermal/parameters/enabled Y" after "on property:init.svc.thermal-engine=stopped" "    write /sys/module/msm_thermal/parameters/enabled Y"
-elif [ "$romtype" == 1 ]; then
-	#Custom Marshmallow
-	replace_string init.recovery.qcom.rc "interactive" "ondemand" "interactive"
-	replace_file init.qcom.power.rc 0750 init.qcom.power.rc
-	replace_file init.qcom.rc 0750 init.qcom.rc
-	replace_file fstab.qcom 0640 fstab.qcom
-elif [ "$romtype" == 2 ]; then
-	#Stock Marshmallow
-	replace_string init.target.rc  "min_cores=4" "min_cores=1" "min_cores=4"
-	insert_line init.qcom.rc "init.qcom.power.rc" after "import init.target.rc" "import init.qcom.power.rc"
-	replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=25%,swapprio=10"
-fi
+replace_string init.recovery.qcom.rc "interactive" "ondemand" "interactive"
+insert_line init.qcom.rc "/sys/module/state_notifier/parameters/enabled 1" after "on property:sys.boot_completed=1" "    write /sys/module/state_notifier/parameters/enabled 1"
+insert_line init.qcom.rc "/system/lib/modules/wireguard.ko" before "insmod /system/lib/modules/touchx.ko" "    insmod /system/lib/modules/wireguard.ko"
+insert_line init.qcom.rc "on property:init.svc.thermal-engine=running" after "stop start_hci_filter" "on property:init.svc.thermal-engine=running"
+insert_line init.qcom.rc "    write /sys/module/msm_thermal/parameters/enabled N" after "on property:init.svc.thermal-engine=running" "    write /sys/module/msm_thermal/parameters/enabled N"
+insert_line init.qcom.rc "on property:init.svc.thermal-engine=stopped" after "write /sys/module/msm_thermal/parameters/enabled N" "on property:init.svc.thermal-engine=stopped"
+insert_line init.qcom.rc "    write /sys/module/msm_thermal/parameters/enabled Y" after "on property:init.svc.thermal-engine=stopped" "    write /sys/module/msm_thermal/parameters/enabled Y"
 
 insert_line init.qcom.rc "/sys/android_touch/dt2w_time 250" after "on property:sys.boot_completed=1" "    write /sys/android_touch/dt2w_time 250"
 
 if [ "$zramsize" != 1 ]; then
-	if [ "$romtype" == 2 ]; then
-		replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=$zramsize,swapprio=10"
-	else
-		replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=$zramsize,swapprio=10,notrim"
-	fi
+	replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=$zramsize,notrim"
 fi
 
 remove_line "sbin/post_init_rr.sh" "mount -o ro,remount /system;"

@@ -66,7 +66,6 @@ cp -rf /system/build.prop /tmp/anykernel/system/bp.sh;
 
 fingerprint="$(file_getprop /tmp/anykernel/system/bp.sh ro.build.fingerprint)";
 sdk="$(file_getprop /tmp/anykernel/system/bp.sh ro.build.version.sdk)";
-sed -i '/sdk=24/c\sdk=$sdk\;' /tmp/anykernel/anykernel.sh;
 
 quark=0;
 device="$(getprop ro.product.device)";
@@ -75,8 +74,8 @@ contains $device "quark" && quark=1;
 
 if [ "$quark" == "0" ]; then
     abort "Unsupported device, this kernel is only for device Quark, yours device is: $device $sku. Aborting...";
-elif [ "$sdk" -lt 23 ]; then
-    abort "Min SDK Supported 23, current SDK = $sdk. Aborting...";
+elif [ "$sdk" -lt 27 ]; then
+    abort "Min SDK Supported 27, current SDK = $sdk. Aborting...";
 fi
 
 motorola=0;
@@ -84,54 +83,24 @@ marhsmallow=0;
 stock=0
 contains "$fingerprint" "motorola" && contains "$fingerprint" "6.0.1" && stock=1;
 
-if [ "$stock" == "1" ]; then
-	sed -i '/romtype=0/c\romtype=2\;' /tmp/anykernel/anykernel.sh;
-elif [ "$sdk" == "23" ]; then
-	sed -i '/romtype=0/c\romtype=1\;' /tmp/anykernel/anykernel.sh;
-fi;
-
 ui_print "-----------------------------------------------";
 ui_print "     $(file_getprop /tmp/anykernel/anykernel.sh kernel.string)";
 
-if [ "$stock" == "1" ]; then
-ui_print "                                               ";
-ui_print "-----------------------------------------------";
-ui_print "     Setting up as Stock ROM                   ";
-ui_print "     Device: $device $sku                      ";
-ui_print "     ROM: Motorola $(file_getprop /tmp/anykernel/system/bp.sh ro.build.id)";
-
-else
 ui_print "                                               ";
 ui_print "-----------------------------------------------";
 ui_print "     Setting up as LOS-Base Custom ROM          ";
 ui_print "     Device: $device $sku SDK: $sdk            ";
-fi;
 
 ui_print "-----------------------------------------------";
 ui_print "                                               ";
-ui_print "     Version - 9.5 - Marshmallow and Nougat   ";
-ui_print "          For LOS-Base and Stock ROM            ";
+ui_print "       Version - 10.0 - Oreo                   ";
+ui_print "          For LOS-Base                         ";
 ui_print "                                               ";
 ui_print "Check XDA Thread, for recommendations help, etc";
 ui_print "                                               ";
 ui_print "-----------------------------------------------";
 mount -o ro /system;
 mount /data;
-
-if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.devicecheck)" == 1 ]; then
-  ui_print "Checking device...";
-  for i in 1 2 3 4 5; do
-    testname="$(file_getprop /tmp/anykernel/anykernel.sh device.name$i)";
-    if [ "$(getprop ro.product.device)" == "$testname" -o "$(getprop ro.build.product)" == "$testname" ]; then
-      ui_print "$testname";
-      match=1;
-    fi;
-  done;
-  ui_print " ";
-  if [ "$match" != 1 ]; then
-    abort "Unsupported device. Aborting...";
-  fi;
-fi;
 
 if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.initd)" == 1 ]; then
   ui_print "Creating init.d...";
@@ -162,33 +131,7 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.modules)" == 1 ]; then
   cp -rf /tmp/anykernel/modules/* /system/lib/modules/;
   ln -sf /system/lib/modules/qca_cld/qca_cld_wlan.ko /system/lib/modules/wlan.ko;
   set_perm_recursive 0 0 0755 0644 /system/lib/modules;
-  set_perm_recursive 0 0 0755 0644 /system/lib/modules/qca_cld;
   chcon -R 'u:object_r:system_file:s0' /system/lib/modules;
-  chcon -R 'u:object_r:system_file:s0' /system/lib/modules/qca_cld;
-
-  cp -rf /tmp/anykernel/system/etc/wifi/* /system/etc/wifi/;
-  set_perm_recursive 0 0 0755 0644 /system/etc/wifi/;
-  chcon -R 'u:object_r:system_file:s0' /system/etc/wifi;
-
-  cp -rf /tmp/anykernel/system/etc/firmware/wlan/qca_cld/* /system/etc/firmware/wlan/qca_cld/;
-  set_perm_recursive 0 0 0755 0644 /system/etc/firmware/wlan/qca_cld;
-  chcon -R 'u:object_r:system_file:s0' /system/etc/firmware/wlan/qca_cld;
-
-  if [ "$stock" == "1" ]; then
-	cp -rf /tmp/anykernel/system/etc/init.qcom.post_boot.sh /system/etc/init.qcom.post_boot.sh;
-	set_perm_recursive 0 0 0755 0644 /system/etc/init.qcom.post_boot.sh;
-	rm -rf /system/lib/hw/power.apq8084.so
-  elif [ "$sdk" -gt 23 ]; then
-	  if [ ! -e /system/lib/libshims_thermal.so ]; then
-	    cp /tmp/anykernel/system/libshims_thermal /system/lib/libshims_thermal.so;
-	    set_perm_recursive 0 0 0755 0644 /system/lib/libshims_thermal.so;
-	  fi
-
-	  if [ ! -e /system/lib/libshim_qcopt.so ]; then
-	    cp /tmp/anykernel/system/libshim_qcopt /system/lib/libshim_qcopt.so;
-	    set_perm_recursive 0 0 0755 0644 /system/lib/libshim_qcopt.so;
-	  fi
-  fi;
 
   mount -o remount,ro /system;
 fi;
