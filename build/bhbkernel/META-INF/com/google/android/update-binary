@@ -84,17 +84,17 @@ stock=0
 contains "$fingerprint" "motorola" && contains "$fingerprint" "6.0.1" && stock=1;
 
 ui_print "-----------------------------------------------";
-ui_print "     $(file_getprop /tmp/anykernel/anykernel.sh kernel.string)";
+ui_print "   $(file_getprop /tmp/anykernel/anykernel.sh kernel.string)";
 
 ui_print "                                               ";
 ui_print "-----------------------------------------------";
-ui_print "   Setting up as LOS-Base Custom ROM            ";
-ui_print "    Device: $device $sku SDK: $sdk              ";
+ui_print "     Setting up as LOS-Base Custom ROM         ";
+ui_print "      Device: $device $sku SDK: $sdk           ";
 
 ui_print "-----------------------------------------------";
 ui_print "                                               ";
-ui_print "         Version - 10.0 - Oreo                 ";
-ui_print "             For LOS-Base                      ";
+ui_print "          Version - 9.5 - Oreo                ";
+ui_print "              For LOS-Base                     ";
 ui_print "                                               ";
 ui_print "Check XDA Thread, for recommendations help, etc";
 ui_print "                                               ";
