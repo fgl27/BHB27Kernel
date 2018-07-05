@@ -10,12 +10,6 @@ do.cleanup=1
 do.buildprop=1
 device.name1=quark
 
-zramsize=1; 
-# to change the above value use a value in MB times 1024 times 1024 or MB_value x 1024 x 1024
-# eg 500MB is 500 x 1024 x 1024 = 524288000
-# so zramsize=524288000;
-# use zramsize=0; to disable the featuring
-
 # shell variables
 docmdline=1;
 is_slot_device=0;
@@ -349,20 +343,12 @@ dump_boot;
 
 replace_string init.recovery.qcom.rc "interactive" "ondemand" "interactive"
 insert_line init.qcom.rc "/sys/module/state_notifier/parameters/enabled 1" after "on property:sys.boot_completed=1" "    write /sys/module/state_notifier/parameters/enabled 1"
-insert_line init.qcom.rc "/system/lib/modules/wireguard.ko" before "insmod /system/lib/modules/touchx.ko" "    insmod /system/lib/modules/wireguard.ko"
 insert_line init.qcom.rc "on property:init.svc.thermal-engine=running" after "stop start_hci_filter" "on property:init.svc.thermal-engine=running"
 insert_line init.qcom.rc "    write /sys/module/msm_thermal/parameters/enabled N" after "on property:init.svc.thermal-engine=running" "    write /sys/module/msm_thermal/parameters/enabled N"
 insert_line init.qcom.rc "on property:init.svc.thermal-engine=stopped" after "write /sys/module/msm_thermal/parameters/enabled N" "on property:init.svc.thermal-engine=stopped"
 insert_line init.qcom.rc "    write /sys/module/msm_thermal/parameters/enabled Y" after "on property:init.svc.thermal-engine=stopped" "    write /sys/module/msm_thermal/parameters/enabled Y"
-
 insert_line init.qcom.rc "/sys/android_touch/dt2w_time 250" after "on property:sys.boot_completed=1" "    write /sys/android_touch/dt2w_time 250"
 
-if [ "$zramsize" != 1 ]; then
-	replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=$zramsize,notrim"
-fi
-
-remove_line "sbin/post_init_rr.sh" "mount -o ro,remount /system;"
-remove_line "sbin/restart.sh" "mount -o ro,remount /system;"
 # end ramdisk changes
 
 write_boot;
