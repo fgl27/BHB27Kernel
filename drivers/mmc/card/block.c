@@ -1360,6 +1360,10 @@ out:
 	return err ? 0 : 1;
 }
 
+/*
+* Quark is extremely slow doing discard and on oreo this is a issue trying to set/unset a pin for lockscreen
+*/
+#if 0
 static int mmc_blk_issue_secdiscard_rq(struct mmc_queue *mq,
 				       struct request *req)
 {
@@ -1433,6 +1437,7 @@ out:
 
 	return err ? 0 : 1;
 }
+#endif
 
 static int mmc_blk_issue_flush(struct mmc_queue *mq, struct request *req)
 {
@@ -2771,11 +2776,16 @@ static int mmc_blk_issue_rq(struct mmc_queue *mq, struct request *req)
 		/* complete ongoing async transfer before issuing discard */
 		if (card->host->areq)
 			mmc_blk_issue_rw_rq(mq, NULL);
+		/*
+		* Quark is extremely slow doing discard and on oreo this is a issue trying to set/unset a pin for lockscreen
+		*/
+		#if 0
 		if (req->cmd_flags & REQ_SECURE &&
 			!(card->quirks & MMC_QUIRK_SEC_ERASE_TRIM_BROKEN))
 			ret = mmc_blk_issue_secdiscard_rq(mq, req);
 		else
-			ret = mmc_blk_issue_discard_rq(mq, req);
+		#endif
+		ret = mmc_blk_issue_discard_rq(mq, req);
 	} else if (cmd_flags & REQ_FLUSH) {
 		/* complete ongoing async transfer before issuing flush */
 		if (card->host->areq)
