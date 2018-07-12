@@ -39,7 +39,7 @@
 #define WG_DEFAULT		0
 #define S2W_DEFAULT		0
 #define S2S_DEFAULT		0
-#define WG_PWRKEY_DUR           150
+#define WG_PWRKEY_DUR           250
 
 /* shamu */
 #define SWEEP_Y_MAX             2559
@@ -53,11 +53,11 @@
 #define SWEEP_X_START		720
 #define SWEEP_X_FINAL           360
 #define SWEEP_Y_NEXT            180
-#define DT2W_FEATHER		150
-#define DT2W_TIME 		150
+#define DT2W_FEATHER		250
+#define DT2W_TIME 		250
 
 /* Wake Gestures */
-#define SWEEP_TIMEOUT		150
+#define SWEEP_TIMEOUT		250
 #define TRIGGER_TIMEOUT		160
 #define WAKE_GESTURE		0x0b
 #define SWEEP_RIGHT		0x01
