@@ -347,7 +347,6 @@ insert_line init.qcom.rc "on property:init.svc.thermal-engine=running" after "st
 insert_line init.qcom.rc "    write /sys/module/msm_thermal/parameters/enabled N" after "on property:init.svc.thermal-engine=running" "    write /sys/module/msm_thermal/parameters/enabled N"
 insert_line init.qcom.rc "on property:init.svc.thermal-engine=stopped" after "write /sys/module/msm_thermal/parameters/enabled N" "on property:init.svc.thermal-engine=stopped"
 insert_line init.qcom.rc "    write /sys/module/msm_thermal/parameters/enabled Y" after "on property:init.svc.thermal-engine=stopped" "    write /sys/module/msm_thermal/parameters/enabled Y"
-insert_line init.qcom.rc "/sys/android_touch/dt2w_time 250" after "on property:sys.boot_completed=1" "    write /sys/android_touch/dt2w_time 250"
 
 # end ramdisk changes
 
