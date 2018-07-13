@@ -67,8 +67,8 @@
 # CROSS_COMPILE toolchain folder
 # latest tools may need this https://forum.xda-developers.com/showpost.php?p=73219523&postcount=42
 #export CROSS_COMPILE=$HOME/android/n/prebuilts/gcc/linux-x86/arm/arm-eabi-4.8/bin/arm-eabi-
-#export CROSS_COMPILE=$HOME/android/temp/arm-eabi-4.9/bin/arm-eabi-
-export CROSS_COMPILE=$HOME/android/temp/arm-eabi-4.9-ubertc/bin/arm-eabi-
+export CROSS_COMPILE=$HOME/android/temp/uber_arm-linux-androideabi-4.9/bin/arm-eabi-
+#export CROSS_COMPILE=$HOME/android/temp/arm-eabi-4.9-ubertc/bin/arm-eabi-
 #export CROSS_COMPILE=$HOME/android/temp/arm-eabi-7.x-ubertc/bin/arm-eabi-
 #export CROSS_COMPILE=$HOME/android/temp/arm-eabi-8.x-ubertc/bin/arm-eabi-
 #export CROSS_COMPILE=$HOME/android/temp/arm-linaro-linux-gnueabi-7.x/bin/arm-linaro-linux-gnueabi-
