@@ -25,6 +25,7 @@
 		qcom,mdss-dsi-stream = <0>;
 		qcom,mdss-dsi-panel-width = <720>;
 		qcom,mdss-dsi-panel-height = <2560>;
+		qcom,mdss-dsi-panel-orientation = "180";
 		qcom,mdss-pan-physical-width-dimension = <65>;
 		qcom,mdss-pan-physical-height-dimension = <115>;
 		qcom,mdss-dsi-panel-clockrate = <830000000>;
@@ -193,6 +194,7 @@
 		qcom,mdss-dsi-stream = <0>;
 		qcom,mdss-dsi-panel-width = <720>;
 		qcom,mdss-dsi-panel-height = <2560>;
+		qcom,mdss-dsi-panel-orientation = "180";
 		qcom,mdss-pan-physical-width-dimension = <65>;
 		qcom,mdss-pan-physical-height-dimension = <115>;
 		qcom,mdss-dsi-panel-clockrate = <830000000>;
