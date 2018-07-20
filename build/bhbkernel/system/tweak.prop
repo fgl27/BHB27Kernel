@@ -1,2 +1,5 @@
 #I included on the rom a power_profile over_under_clock, it will falls back to default if power_profile_ou.xml is missing
 ro.power_profile.override=power_profile_ou
+
+# remove ro.panel.mountflip as the the mount flip problem is fixed in the kernel
+!ro.panel.mountflip
