@@ -74,7 +74,7 @@ export CROSS_COMPILE=$HOME/android/temp/uber_arm-linux-androideabi-4.9/bin/arm-l
 #export CROSS_COMPILE=$HOME/android/temp/arm-linaro-linux-gnueabi-7.x/bin/arm-linaro-linux-gnueabi-
 
 #kernel zip name
-ZIPNAME="BHB27-Kernel-Oreo-V9.10.zip";
+ZIPNAME="BHB27-Kernel-Oreo-V9.11.zip";
 
 #core, the number of cores to do the compiling job... 
 CORES=8;
