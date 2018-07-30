@@ -342,6 +342,7 @@ dump_boot;
 # begin ramdisk changes
 
 replace_string init.recovery.qcom.rc "interactive" "ondemand" "interactive"
+replace_string init.qcom.power.rc "scaling_governor impulse" "scaling_governor interactive" "scaling_governor impulse"
 insert_line init.qcom.rc "/sys/module/state_notifier/parameters/enabled 1" after "on property:sys.boot_completed=1" "    write /sys/module/state_notifier/parameters/enabled 1"
 insert_line init.qcom.rc "on property:init.svc.thermal-engine=running" after "stop start_hci_filter" "on property:init.svc.thermal-engine=running"
 insert_line init.qcom.rc "    write /sys/module/msm_thermal/parameters/enabled N" after "on property:init.svc.thermal-engine=running" "    write /sys/module/msm_thermal/parameters/enabled N"
