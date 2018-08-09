@@ -22,7 +22,6 @@
 #include <linux/spinlock.h>
 #include <linux/rcupdate.h>
 #include <linux/workqueue.h>
-#include <linux/fdleak_dbg.h>
 
 int sysctl_nr_open __read_mostly = 1024*1024;
 int sysctl_nr_open_min = BITS_PER_LONG;
@@ -581,7 +580,6 @@ void __fd_install(struct files_struct *files, unsigned int fd,
 void fd_install(unsigned int fd, struct file *file)
 {
 	__fd_install(current->files, fd, file);
-	warn_if_big_fd(fd, current);
 }
 
 EXPORT_SYMBOL(fd_install);
