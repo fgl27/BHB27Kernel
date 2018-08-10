@@ -349,6 +349,8 @@ insert_line init.qcom.rc "    write /sys/module/msm_thermal/parameters/enabled N
 insert_line init.qcom.rc "on property:init.svc.thermal-engine=stopped" after "write /sys/module/msm_thermal/parameters/enabled N" "on property:init.svc.thermal-engine=stopped"
 insert_line init.qcom.rc "    write /sys/module/msm_thermal/parameters/enabled Y" after "on property:init.svc.thermal-engine=stopped" "    write /sys/module/msm_thermal/parameters/enabled Y"
 insert_line init.qcom.power.rc "    write /sys/devices/fdb00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_pwrlevel 3" after "    write /sys/devices/fdb00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_gpuclk 500000000" "    write /sys/devices/fdb00000.qcom,kgsl-3d0/kgsl/kgsl-3d0/max_pwrlevel 3"
+insert_line sbin/post.init.rr.bootc.sh "/sys/block/zram0/max_comp_streams" after "echo 25 > /proc/sys/vm/swappiness" "echo 4 > /sys/block/zram0/max_comp_streams"
+insert_line sbin/post.init.rr.bootc.sh "/sys/block/zram0/comp_algorithm" after "echo 25 > /proc/sys/vm/swappiness" "echo lz4 > /sys/block/zram0/comp_algorithm"
 
 # end ramdisk changes
 
