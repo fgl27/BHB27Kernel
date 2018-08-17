@@ -416,10 +416,8 @@ static int task_get_unused_fd_flags(struct binder_proc *proc, int flags)
 static void task_fd_install(
 	struct binder_proc *proc, unsigned int fd, struct file *file)
 {
-	if (proc->files) {
+	if (proc->files)
 		__fd_install(proc->files, fd, file);
-		warn_if_big_fd(fd, proc->tsk);
-	}
 }
 
 /*
