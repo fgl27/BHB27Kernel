@@ -122,6 +122,9 @@ if [ -z "$clean" ]; then
 	make clean && make mrproper
 fi
 
+# Remove module that may be there from N_c branch build
+rm -rf ./build/bhbkernel/modules/*
+
 if [ ! -d "./build/temp" ]; then
 	mkdir ./build/temp
 fi
