@@ -370,6 +370,7 @@ if [ "$romtype" == 0 ]; then
 	insert_line init.qcom.rc "    write /sys/module/msm_thermal/parameters/enabled N" after "on property:init.svc.thermal-engine=running" "    write /sys/module/msm_thermal/parameters/enabled N"
 	insert_line init.qcom.rc "on property:init.svc.thermal-engine=stopped" after "write /sys/module/msm_thermal/parameters/enabled N" "on property:init.svc.thermal-engine=stopped"
 	insert_line init.qcom.rc "    write /sys/module/msm_thermal/parameters/enabled Y" after "on property:init.svc.thermal-engine=stopped" "    write /sys/module/msm_thermal/parameters/enabled Y"
+		replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=25%,zramstreams=4,swapprio=10,notrim"
 elif [ "$romtype" == 1 ]; then
 	#Custom Marshmallow
 	replace_string init.recovery.qcom.rc "interactive" "ondemand" "interactive"
@@ -380,16 +381,16 @@ elif [ "$romtype" == 2 ]; then
 	#Stock Marshmallow
 	replace_string init.target.rc  "min_cores=4" "min_cores=1" "min_cores=4"
 	insert_line init.qcom.rc "init.qcom.power.rc" after "import init.target.rc" "import init.qcom.power.rc"
-	replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=25%,swapprio=10"
+	replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=25%,zramstreams=4,swapprio=10"
 fi
 
 insert_line init.qcom.rc "/sys/android_touch/dt2w_time 250" after "on property:sys.boot_completed=1" "    write /sys/android_touch/dt2w_time 250"
 
 if [ "$zramsize" != 1 ]; then
 	if [ "$romtype" == 2 ]; then
-		replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=$zramsize,swapprio=10"
+		replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=$zramsize,zramstreams=4,swapprio=10"
 	else
-		replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=$zramsize,swapprio=10,notrim"
+		replace_line fstab.qcom "/dev/block/zram0" "/dev/block/zram0                                    none             swap             defaults                 zramsize=$zramsize,zramstreams=4,swapprio=10,notrim"
 	fi
 fi
 
