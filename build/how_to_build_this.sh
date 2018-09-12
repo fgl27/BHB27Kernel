@@ -167,12 +167,13 @@ else
 	cp -rf ./drivers/staging/qcacld-2.0/firmware_bin/WCNSS_cfg.dat ./build/bhbkernel/system/etc/firmware/wlan/qca_cld/WCNSS_cfg.dat
 	cp -rf ./build/temp/arch/arm/boot/zImage ./build/bhbkernel/zImage
 	cp -rf ./build/temp/arch/arm/boot/dt.img.lz4 ./build/bhbkernel/dtb
-        rm -rf ./build/*.zip
-        7za a -tzip -r ./build/build.zip ./build/bhbkernel/* '-x!README.md'  '-x!*.gitignore' > /dev/null
-        java -jar ./build/zipsigner.jar './build/build.zip' './build/'$ZIPNAME
-        rm -rf ./build/bhbkernel/system/etc/wifi/WCNSS_qcom_cfg.ini
-        rm -rf ./build/bhbkernel/system/etc/wifi/WCNSS_qcom_wlan_nv.bin
-        rm -rf ./build/bhbkernel/system/etc/firmware/wlan/qca_cld/WCNSS_cfg.dat
+	rm -rf ./build/*.zip
+	7za a -tzip -r ./build/build.zip ./build/bhbkernel/* '-x!README.md'  '-x!*.gitignore' > /dev/null
+	java -jar ./build/zipsigner.jar './build/build.zip' './build/'$ZIPNAME
+	rm './build/build.zip'
+	rm -rf ./build/bhbkernel/system/etc/wifi/WCNSS_qcom_cfg.ini
+	rm -rf ./build/bhbkernel/system/etc/wifi/WCNSS_qcom_wlan_nv.bin
+	rm -rf ./build/bhbkernel/system/etc/firmware/wlan/qca_cld/WCNSS_cfg.dat
 	echo -e "\nKernel Build OK zip file at... $FOLDER build/bhbkernel/$ZIPNAME \n";
 fi;
 
