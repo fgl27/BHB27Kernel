@@ -151,6 +151,7 @@ else
 
 	7za a -tzip -r ./build/build.zip ./build/bhbkernel/* '-x!README.md'  '-x!*.gitignore' > /dev/null
 	java -jar ./build/zipsigner.jar './build/build.zip' './build/'$ZIPNAME
+	rm './build/build.zip'
 	echo -e "\nKernel Build OK zip file at... $FOLDER build/bhbkernel/$ZIPNAME \n";
 fi;
 
