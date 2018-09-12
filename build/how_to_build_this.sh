@@ -74,7 +74,7 @@ export CROSS_COMPILE=$HOME/android/temp/arm-eabi-4.9-ubertc/bin/arm-eabi-
 #export CROSS_COMPILE=$HOME/android/temp/arm-linaro-linux-gnueabi-7.x/bin/arm-linaro-linux-gnueabi-
 
 #kernel zip name
-ZIPNAME="BHB27-Kernel-Marshmallow-Nougat-V96.zip";
+ZIPNAME="BHB27-Kernel-Marshmallow-Nougat-V97.zip";
 
 #core, the number of cores to do the compiling job... 
 CORES=8;
