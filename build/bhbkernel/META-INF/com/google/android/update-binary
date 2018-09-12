@@ -77,6 +77,8 @@ if [ "$quark" == "0" ]; then
     abort "Unsupported device, this kernel is only for device Quark, yours device is: $device $sku. Aborting...";
 elif [ "$sdk" -lt 23 ]; then
     abort "Min SDK Supported 23, current SDK = $sdk. Aborting...";
+elif [ "$sdk" -gt 25 ]; then
+    abort "Max SDK Supported 25, current SDK = $sdk. Aborting...";
 fi
 
 motorola=0;
