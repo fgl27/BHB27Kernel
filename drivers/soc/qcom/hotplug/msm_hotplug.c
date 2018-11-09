@@ -335,8 +335,12 @@ static void cpu_down_work(struct work_struct *work)
 			continue;
 		lowest_cpu = get_lowest_load_cpu();
 		if (lowest_cpu > 0 && lowest_cpu <= stats.total_cpus) {
+#ifdef CONFIG_CPU_BOOST
 			if (check_lock(lowest_cpu) ||
 			    check_cpuboost(lowest_cpu))
+#else
+			if (check_lock(lowest_cpu))
+#endif
 				break;
 			cpu_down(lowest_cpu);
 		}

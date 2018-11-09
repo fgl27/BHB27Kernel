@@ -57,6 +57,7 @@ static struct workqueue_struct *dyn_workq;
 #ifdef CONFIG_STATE_NOTIFIER
 static struct notifier_block notify;
 
+#ifdef CONFIG_CPU_BOOST
 /* Bring online each possible CPU up to max_online cores */
 static void __ref up_all(void)
 {
@@ -74,6 +75,7 @@ static void __ref up_all(void)
 
 	down_timer = 0;
 }
+#endif
 #endif
 /* Iterate through possible CPUs and bring online the first offline found */
 static void __ref up_one(void)
@@ -191,7 +193,9 @@ static void blu_plug_suspend(void)
 
 static void blu_plug_resume(void)
 {
+#ifdef CONFIG_CPU_BOOST
 	up_all();
+#endif
 	queue_delayed_work_on(0, dyn_workq, &dyn_work, msecs_to_jiffies(delay));
 }
 

@@ -212,6 +212,7 @@ static void asmp_suspend(void)
 
 static void __ref asmp_resume(void)
 {
+#ifdef CONFIG_CPU_BOOST
 	unsigned int cpu;
 
 	if (wakeup_boost) {
@@ -223,6 +224,7 @@ static void __ref asmp_resume(void)
 				cpu_up(cpu);
 		}
 	}
+#endif
 
 	last_boost_time = ktime_to_us(ktime_get());
 
