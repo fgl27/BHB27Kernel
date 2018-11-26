@@ -1286,14 +1286,11 @@ static int stm401_probe(struct i2c_client *client,
 
 	ps_stm401->is_suspended = false;
 
-	/* We could call switch_stm401_mode(NORMALMODE) at this point, but
-	 * instead we will hold the part in reset and only go to NORMALMODE on a
-	 * request to do so from the flasher.  The flasher must be present, and
-	 * it must verify the firmware file is available before switching to
-	 * NORMALMODE. This is to prevent a build that is missing firmware or
-	 * flasher from behaving as a normal build (with factory firmware in the
-	 * part).
+	/* We need to call switch_stm401_mode(NORMALMODE) at this point, because
+	 * If we don't some sensors will not work properly until they are reset
+	 * individual. This is most notice from gestures for camera sensors.
 	 */
+	switch_stm401_mode(NORMALMODE);
 
 	mutex_unlock(&ps_stm401->lock);
 
