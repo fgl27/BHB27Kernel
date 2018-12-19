@@ -1437,7 +1437,7 @@ static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry,
 					 dentry->d_name.name);
 			return ERR_PTR(-EIO);
 		}
-		inode = ext4_iget_normal(dir->i_sb, ino);
+		inode = ext4_iget(dir->i_sb, ino, EXT4_IGET_NORMAL);
 		if (inode == ERR_PTR(-ESTALE)) {
 			EXT4_ERROR_INODE(dir,
 					 "deleted inode referenced: %u",
@@ -1468,7 +1468,7 @@ struct dentry *ext4_get_parent(struct dentry *child)
 		return ERR_PTR(-EIO);
 	}
 
-	return d_obtain_alias(ext4_iget_normal(child->d_inode->i_sb, ino));
+	return d_obtain_alias(ext4_iget(child->d_inode->i_sb, ino, EXT4_IGET_NORMAL));
 }
 
 /*
