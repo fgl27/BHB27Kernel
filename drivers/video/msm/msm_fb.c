@@ -46,8 +46,8 @@
 
 #define MSM_FB_C
 
-#ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
-#define MSM_FB_NUM	3
+#ifdef CONFIG_FB_MSM_QUINTUPLE_BUFFER
+#define MSM_FB_NUM	5
 #endif
 
 static unsigned char *fbram;
