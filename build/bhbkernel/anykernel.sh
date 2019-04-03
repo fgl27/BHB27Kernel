@@ -3,7 +3,7 @@
 
 ## AnyKernel setup
 # EDIFY properties
-kernel.string=BHB27-Kernel by BHB27 @ xda-developers
+kernel.string=BHB27-Kernel by fgl27 @ xda-developers
 do.initd=0
 do.modules=0
 do.cleanup=1
