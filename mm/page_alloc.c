@@ -1114,7 +1114,7 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
 			     page_group_by_mobility_disabled)) {
 				int pages;
 				pages = move_freepages_block(zone, page,
-								start_migratetype);
+								start_migratetype, 0);
 
 				/* Claim the whole block if over half of it is free */
 				if (pages >= (1 << (pageblock_order-1)) ||
@@ -2692,7 +2692,7 @@ retry:
 			page = __alloc_pages_may_oom(gfp_mask, order,
 					zonelist, high_zoneidx,
 					nodemask, preferred_zone,
-					migratetype);
+					migratetype, &did_some_progress);
 			if (page)
 				goto got_pg;
 
@@ -2714,7 +2714,7 @@ retry:
 					goto nopage;
 			}
 
-			goto restart;
+			goto retry;
 		}
 	}
 
