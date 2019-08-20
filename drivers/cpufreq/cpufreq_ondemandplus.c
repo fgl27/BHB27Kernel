@@ -544,7 +544,7 @@ static ssize_t store_timer_rate(struct kobject *kobj,
         int ret;
         unsigned long val;
 
-        ret = strict_strtoul(buf, 0, &val);
+        ret = kstrtoul(buf, 0, &val);
         if (ret < 0)
                 return ret;
 
@@ -567,7 +567,7 @@ static ssize_t store_up_threshold(struct kobject *kobj,
         int ret;
         unsigned long val;
 
-        ret = strict_strtoul(buf, 0, &val);
+        ret = kstrtoul(buf, 0, &val);
         if (ret < 0)
                 return ret;
                 
@@ -596,7 +596,7 @@ static ssize_t store_down_differential(struct kobject *kobj,
         int ret;
         unsigned long val;
 
-        ret = strict_strtoul(buf, 0, &val);
+        ret = kstrtoul(buf, 0, &val);
         if (ret < 0)
                 return ret;
 
@@ -698,7 +698,7 @@ static ssize_t store_inter_staycycles(struct kobject *kobj,
         int ret;
         unsigned long val;
 
-        ret = strict_strtoul(buf, 0, &val);
+        ret = kstrtoul(buf, 0, &val);
         if (ret < 0)
                 return ret;
                 

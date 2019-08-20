@@ -1173,7 +1173,7 @@ static ssize_t store_hispeed_freq(struct kobject *kobj,
 #ifdef CONFIG_UC_MODE_AUTO_CHANGE
 	unsigned long flags2;
 #endif
-	ret = strict_strtoul(buf, 0, &val);
+	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
 		return ret;
 #ifdef CONFIG_UC_MODE_AUTO_CHANGE
@@ -1211,7 +1211,7 @@ static ssize_t store_sampling_down_factor(struct kobject *kobj,
 #ifdef CONFIG_UC_MODE_AUTO_CHANGE
 	unsigned long flags2;
 #endif
-	ret = strict_strtoul(buf, 0, &val);
+	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
 		return ret;
 #ifdef CONFIG_UC_MODE_AUTO_CHANGE
@@ -1248,7 +1248,7 @@ static ssize_t store_go_hispeed_load(struct kobject *kobj,
 #ifdef CONFIG_UC_MODE_AUTO_CHANGE
 	unsigned long flags2;
 #endif
-	ret = strict_strtoul(buf, 0, &val);
+	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
 		return ret;
 #ifdef CONFIG_UC_MODE_AUTO_CHANGE
@@ -1284,7 +1284,7 @@ static ssize_t store_min_sample_time(struct kobject *kobj,
 #ifdef CONFIG_UC_MODE_AUTO_CHANGE
 	unsigned long flags2;
 #endif
-	ret = strict_strtoul(buf, 0, &val);
+	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
 		return ret;
 #ifdef CONFIG_UC_MODE_AUTO_CHANGE
@@ -1320,7 +1320,7 @@ static ssize_t store_timer_rate(struct kobject *kobj,
 #ifdef CONFIG_UC_MODE_AUTO_CHANGE
 	unsigned long flags2;
 #endif
-	ret = strict_strtoul(buf, 0, &val);
+	ret = kstrtoul(buf, 0, &val);
 	if (ret < 0)
 		return ret;
 #ifdef CONFIG_UC_MODE_AUTO_CHANGE
@@ -1634,7 +1634,7 @@ static ssize_t store_##obj_name(struct kobject *kobj,			\
         int ret;							\
         long unsigned int val;						\
 									\
-        ret = strict_strtoul(buf, 0, &val);				\
+        ret = kstrtoul(buf, 0, &val);				\
         if (ret < 0)							\
                 return ret;						\
 									\
@@ -1664,7 +1664,7 @@ static ssize_t store_##obj_name(struct kobject *kobj,			\
         int ret;							\
         long unsigned int val;						\
 									\
-        ret = strict_strtoul(buf, 0, &val);				\
+        ret = kstrtoul(buf, 0, &val);				\
         if (ret < 0)							\
                 return ret;						\
 									\
@@ -1694,7 +1694,7 @@ static ssize_t store_##obj_name(struct kobject *kobj,			\
         int ret;							\
         unsigned long val;						\
 									\
-        ret = strict_strtoul(buf, 0, &val);				\
+        ret = kstrtoul(buf, 0, &val);				\
         if (ret < 0)							\
                 return ret;						\
 									\
