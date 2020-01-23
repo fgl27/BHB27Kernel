@@ -131,7 +131,7 @@ if [ ! -d "./build/temp" ]; then
 fi
 
 # the log.txt here are the build logs to check if error stop the kernel build
-time make bhb27kernel_defconfig && time make -j$CORES 2>&1 | tee ./build/build_log.txt && ./build/dtbToolCM -2 -o ./build/temp/arch/arm/boot/dt.img -s 4096 -p ./build/temp/scripts/dtc/ ./build/temp/arch/arm/boot/dts/
+time make quark_defconfig && time make -j$CORES 2>&1 | tee ./build/build_log.txt && ./build/dtbToolCM -2 -o ./build/temp/arch/arm/boot/dt.img -s 4096 -p ./build/temp/scripts/dtc/ ./build/temp/arch/arm/boot/dts/
 lz4 -9 ./build/temp/arch/arm/boot/dt.img
 
 # check if kernel build ok
