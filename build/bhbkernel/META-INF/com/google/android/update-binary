@@ -62,7 +62,15 @@ $bb chmod -R 755 /tmp/anykernel/tools /tmp/anykernel/bin;
 
 # Support for multi ROM base on build prop
 mount -o ro /system;
-cp -rf /system/build.prop /tmp/anykernel/system/bp.sh;
+
+
+if [ -f "/system/system/build.prop" ]; then
+  SS="/system/system";
+else
+  SS="/system";
+fi;
+
+cp -rf "$SS"/build.prop /tmp/anykernel/system/bp.sh;
 
 fingerprint="$(file_getprop /tmp/anykernel/system/bp.sh ro.build.fingerprint)";
 sdk="$(file_getprop /tmp/anykernel/system/bp.sh ro.build.version.sdk)";
@@ -106,8 +114,8 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.initd)" == 1 ]; then
   ui_print "Creating init.d...";
   ui_print " ";
   mount -o remount,rw /system;
-  mkdir /system/etc/init.d;
-  set_perm_recursive 0 0 0755 0755 /system/etc/init.d;
+  mkdir "$SS"/etc/init.d;
+  set_perm_recursive 0 0 0755 0755 "$SS"/etc/init.d;
   mount -o remount,ro /system;
 fi;
 
@@ -127,11 +135,11 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.modules)" == 1 ]; then
   ui_print " ";
   ui_print "Pushing modules...";
   mount -o remount,rw /system;
-  rm -rf /system/lib/modules/*;
-  cp -rf /tmp/anykernel/modules/* /system/lib/modules/;
-  ln -sf /system/lib/modules/qca_cld/qca_cld_wlan.ko /system/lib/modules/wlan.ko;
-  set_perm_recursive 0 0 0755 0644 /system/lib/modules;
-  chcon -R 'u:object_r:system_file:s0' /system/lib/modules;
+  rm -rf "$SS"/lib/modules/*;
+  cp -rf /tmp/anykernel/modules/* "$SS"/lib/modules/;
+  ln -sf "$SS"/lib/modules/qca_cld/qca_cld_wlan.ko "$SS"/lib/modules/wlan.ko;
+  set_perm_recursive 0 0 0755 0644 "$SS"/lib/modules;
+  chcon -R 'u:object_r:system_file:s0' "$SS"/lib/modules;
 
   mount -o remount,ro /system;
 fi;
@@ -184,7 +192,7 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.buildprop)" == 1 ]; then
 	## abort tweak if tweak.prop is not found or is empty
 	if [ -s $tweak ]; then
 
-		build=/system/build.prop;
+		build="$SS"/build.prop;
 		chmod 0666 $build;
 
 		prop_check $tweak;
@@ -194,7 +202,7 @@ if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.buildprop)" == 1 ]; then
 			ui_print " ";
 			ui_print " Patching build.prop";
 			if [ ! -e $build.bak ]; then
-				cp /system/build.prop /system/build.prop.bak;
+				cp "$SS"/build.prop "$SS"/build.prop.bak;
 				ui_print " build.prop backup saved in /system/build.prop.bak";
 			fi
 			## read only lines matching valid entry pattern (someVAR=someVAL, !someSTR, @someENTR|someSTR, $someVAR=someVAL)
