@@ -65,7 +65,21 @@ mount -o ro /system;
 
 
 if [ -f "/system/system/build.prop" ]; then
+  #Fix path and init file for android 10
   SS="/system/system";
+  sed -i '/romtype=0/c\romtype=1\;' /tmp/anykernel/anykernel.sh;
+
+  mount -o remount,rw /system;
+
+  replace="max_pwrlevel 3";
+  replaceby="max_pwrlevel 6";
+  sed -i "s;${replace};${replaceby};" /system/system/vendor/etc/init/hw/init.qcom.power.rc;
+
+  replace="max_pwrlevel 0";
+  replaceby="max_pwrlevel 2";
+  sed -i "s;${replace};${replaceby};" /system/system/vendor/etc/init/hw/init.qcom.power.rc;
+
+  mount -o ro /system;
 else
   SS="/system";
 fi;
