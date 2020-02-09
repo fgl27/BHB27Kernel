@@ -67,6 +67,17 @@ mount -o ro /system;
 if [ -f "/system/system/build.prop" ]; then
   #Fix path and init file for android 10
   SS="/system/system";
+else
+  SS="/system";
+fi;
+
+cp -rf "$SS"/build.prop /tmp/anykernel/system/bp.sh;
+
+fingerprint="$(file_getprop /tmp/anykernel/system/bp.sh ro.build.fingerprint)";
+sdk="$(file_getprop /tmp/anykernel/system/bp.sh ro.build.version.sdk)";
+
+if [ "$sdk" -gt 28 ]; then
+  #Fix path and init file for android 10
   sed -i '/romtype=0/c\romtype=1\;' /tmp/anykernel/anykernel.sh;
 
   mount -o remount,rw /system;
@@ -80,14 +91,7 @@ if [ -f "/system/system/build.prop" ]; then
   sed -i "s;${replace};${replaceby};" /system/system/vendor/etc/init/hw/init.qcom.power.rc;
 
   mount -o ro /system;
-else
-  SS="/system";
-fi;
-
-cp -rf "$SS"/build.prop /tmp/anykernel/system/bp.sh;
-
-fingerprint="$(file_getprop /tmp/anykernel/system/bp.sh ro.build.fingerprint)";
-sdk="$(file_getprop /tmp/anykernel/system/bp.sh ro.build.version.sdk)";
+fi
 
 quark=0;
 device="$(getprop ro.product.device)";
