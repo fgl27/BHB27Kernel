@@ -8,6 +8,8 @@ country 00:
 	(2474 - 2494 @ 20), (3, 30), PASSIVE-SCAN, NO-IBSS, NO-OFDM
 	# Channel 36 - 64
 	(5170 - 5330 @ 80), (3, 24), PASSIVE-SCAN, NO-IBSS
+	(5250 - 5330 @ 80), (3, 20), PASSIVE-SCAN, NO-IBSS
+	(5490 - 5710 @ 80), (3, 20), PASSIVE-SCAN, NO-IBSS
 	# Channel 100 - 140
 	(5490 - 5710 @ 80), (3, 27), PASSIVE-SCAN, NO-IBSS
 	# Channel 149 - 165
