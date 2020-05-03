@@ -11,7 +11,7 @@ do.buildprop=1
 device.name1=quark
 
 # shell variables
-docmdline=1;
+dopermissive=0;
 is_slot_device=0;
 romtype=0;
 ## end setup
@@ -103,13 +103,10 @@ dump_boot() {
 write_boot() {
   cd $split_img;
   # Here I set the cmdline, selinux to permissive so I can boot and run my .sh with no problems
-  # I also do some safety net related those help me to pass the verification running CM base ROM
-  if [ $docmdline == 1 ]; then
-    sed -ri 's/ androidboot.flash.locked=[0-1]//g' boot.img-cmdline
-    sed -ri 's/ androidboot.bl_state=[0-2]//g' boot.img-cmdline
-    sed -ri 's/ androidboot.verifiedbootstate=green|androidboot.verifiedbootstate=yellow|androidboot.verifiedbootstate=orange|androidboot.verifiedbootstate=red//g' boot.img-cmdline
-    sed -ri 's/ buildvariant=eng|buildvariant=user|buildvariant=userdebug//g' boot.img-cmdline
-    echo $(cat boot.img-cmdline) buildvariant=user androidboot.verifiedbootstate=green androidboot.bl_state=0 androidboot.flash.locked=1 > boot.img-cmdline
+  if [ $dopermissive == 1 ]; then
+    sed -ri 's/ enforcing=[0-1]//g' boot.img-cmdline
+    sed -ri 's/ androidboot.selinux=permissive|androidboot.selinux=enforcing|androidboot.selinux=disabled//g' boot.img-cmdline
+    echo $(cat boot.img-cmdline) androidboot.selinux=permissive > boot.img-cmdline
   fi;
   if [ -f *-cmdline ]; then
     cmdline=`cat *-cmdline`;
@@ -179,12 +176,6 @@ write_boot() {
     ui_print " "; ui_print "Repacking image failed. Aborting..."; exit 1;
   elif [ `wc -c < /tmp/anykernel/boot-new.img` -gt `wc -c < /tmp/anykernel/boot.img` ]; then
     ui_print " "; ui_print "New image larger than boot partition. Aborting..."; exit 1;
-  fi;
-  if [ -f "/data/custom_boot_image_patch.sh" ]; then
-    ash /data/custom_boot_image_patch.sh /tmp/anykernel/boot-new.img;
-    if [ $? != 0 ]; then
-      ui_print " "; ui_print "User script execution failed. Aborting..."; exit 1;
-    fi;
   fi;
   if [ -f "$bin/flash_erase" -a -f "$bin/nandwrite" ]; then
     $bin/flash_erase $block 0 0;

@@ -22,6 +22,7 @@ set_perm_recursive() {
 }
 file_getprop() { grep "^$2" "$1" | cut -d= -f2; }
 getprop() { test -e /sbin/getprop && /sbin/getprop $1 || file_getprop /default.prop $1; }
+
 abort() { 
  ui_print "-----------------------------------------------";
  ui_print "     $(file_getprop /tmp/anykernel/anykernel.sh kernel.string)";
@@ -31,8 +32,8 @@ abort() {
  if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.cleanup)" == 1 ]; then
    rm -rf /tmp/anykernel;
  fi;
- umount /system;
- mount /data 2>/dev/null;
+ umount /system_root 2>/dev/null;
+ umount /system 2>/dev/null;
  exit; 
 }
 
@@ -60,10 +61,12 @@ bb=/tmp/anykernel/tools/busybox;
 chmod 755 $bb;
 $bb chmod -R 755 /tmp/anykernel/tools /tmp/anykernel/bin;
 
-# Support for multi ROM base on build prop
-mount -o ro /system;
+#Make sure system is not mounted and mount it as rw
+umount /system_root 2>/dev/null;
+umount /system 2>/dev/null;
+mount -o rw /system_root || mount -o rw /system;
 
-
+#Get correct system bp path and use as system path
 if [ -f "/system/system/build.prop" ]; then
   #Fix path and init file for android 10
   SS="/system/system";
@@ -71,6 +74,7 @@ else
   SS="/system";
 fi;
 
+# Support for multi ROM base on build prop
 cp -rf "$SS"/build.prop /tmp/anykernel/system/bp.sh;
 
 fingerprint="$(file_getprop /tmp/anykernel/system/bp.sh ro.build.fingerprint)";
@@ -80,8 +84,6 @@ if [ "$sdk" -gt 28 ]; then
   #Fix path and init file for android 10
   sed -i '/romtype=0/c\romtype=1\;' /tmp/anykernel/anykernel.sh;
 
-  mount -o remount,rw /system;
-
   replace="max_pwrlevel 3";
   replaceby="max_pwrlevel 6";
   sed -i "s;${replace};${replaceby};" /system/system/vendor/etc/init/hw/init.qcom.power.rc;
@@ -90,7 +92,6 @@ if [ "$sdk" -gt 28 ]; then
   replaceby="max_pwrlevel 2";
   sed -i "s;${replace};${replaceby};" /system/system/vendor/etc/init/hw/init.qcom.power.rc;
 
-  mount -o ro /system;
 fi
 
 quark=0;
@@ -125,16 +126,12 @@ ui_print "                                               ";
 ui_print "Check XDA Thread, for recommendations help, etc";
 ui_print "                                               ";
 ui_print "-----------------------------------------------";
-mount -o ro /system;
-mount /data;
 
 if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.initd)" == 1 ]; then
   ui_print "Creating init.d...";
   ui_print " ";
-  mount -o remount,rw /system;
   mkdir "$SS"/etc/init.d;
   set_perm_recursive 0 0 0755 0755 "$SS"/etc/init.d;
-  mount -o remount,ro /system;
 fi;
 
 ui_print "Installing kernel...";
@@ -152,135 +149,130 @@ fi;
 if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.modules)" == 1 ]; then
   ui_print " ";
   ui_print "Pushing modules...";
-  mount -o remount,rw /system;
   rm -rf "$SS"/lib/modules/*;
   cp -rf /tmp/anykernel/modules/* "$SS"/lib/modules/;
   ln -sf "$SS"/lib/modules/qca_cld/qca_cld_wlan.ko "$SS"/lib/modules/wlan.ko;
   set_perm_recursive 0 0 0755 0644 "$SS"/lib/modules;
   chcon -R 'u:object_r:system_file:s0' "$SS"/lib/modules;
-
-  mount -o remount,ro /system;
 fi;
 
 ##Build.prop editor
 
 do_Prop_Patching=0;
 prop_check() {
-	## only print Patching build.prop if something will be patched
-	sed -r '/(^#|^ *$|^BACKUP=)/d;/(.*=.*|^\!|^\@.*\|.*|^\$.*\|.*)/!d' "$1" | while read line
-	do
-		## remove entry
-		if echo "$line" | grep -q '^\!';
-		then
-			entry=$(echo "${line#?}" | sed -e 's/[\/&]/\\&/g');
-			grep -q "$entry" "$build" && do_Prop_Patching=1;
-		elif echo "$line" | grep -q '^\@';
-		then
-			entry=$(echo "${line#?}" | sed -e 's/[\/&]/\\&/g');
-			var=$(echo "$entry" | cut -d\| -f1);
-			grep -q "$var" "$build" && do_Prop_Patching=1;
-		elif echo "$line" | grep -q '^\$';
-		then
+    ## only print Patching build.prop if something will be patched
+    sed -r '/(^#|^ *$|^BACKUP=)/d;/(.*=.*|^\!|^\@.*\|.*|^\$.*\|.*)/!d' "$1" | while read line
+    do
+        ## remove entry
+        if echo "$line" | grep -q '^\!';
+        then
+            entry=$(echo "${line#?}" | sed -e 's/[\/&]/\\&/g');
+            grep -q "$entry" "$build" && do_Prop_Patching=1;
+        elif echo "$line" | grep -q '^\@';
+        then
+            entry=$(echo "${line#?}" | sed -e 's/[\/&]/\\&/g');
+            var=$(echo "$entry" | cut -d\| -f1);
+            grep -q "$var" "$build" && do_Prop_Patching=1;
+        elif echo "$line" | grep -q '^\$';
+        then
 
-			entry=$(echo "${line#?}" | sed -e 's/[\/&]/\\&/g');
-			var=$(echo "$entry" | cut -d\| -f1);
-			grep -q "$var=" "$build" && do_Prop_Patching=1;
-		else
-			var=$(echo "$line" | cut -d= -f1);
-			if grep -q "$var" "$build";
-			then
-				grep -q $(grep "$var" "$tweak") "$build" || do_Prop_Patching=1;
-			else
-				do_Prop_Patching=1;
-			fi;
-		fi;
+            entry=$(echo "${line#?}" | sed -e 's/[\/&]/\\&/g');
+            var=$(echo "$entry" | cut -d\| -f1);
+            grep -q "$var=" "$build" && do_Prop_Patching=1;
+        else
+            var=$(echo "$line" | cut -d= -f1);
+            if grep -q "$var" "$build";
+            then
+                grep -q $(grep "$var" "$tweak") "$build" || do_Prop_Patching=1;
+            else
+                do_Prop_Patching=1;
+            fi;
+        fi;
 
-		if [ "$do_Prop_Patching" == 1 ]; then
-			return "$do_Prop_Patching";
-		fi;
-	done;
+        if [ "$do_Prop_Patching" == 1 ]; then
+            return "$do_Prop_Patching";
+        fi;
+    done;
 }
 
 ## credits for tweakprop @kl3 http://forum.xda-developers.com/showthread.php?t=2664332 | https://notabug.org/kl3/tweakprop
 if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.buildprop)" == 1 ]; then
 
-	mount -o remount,rw /system;
+    tweak="/tmp/anykernel/system/tweak.prop";
+    ## abort tweak if tweak.prop is not found or is empty
+    if [ -s $tweak ]; then
 
-	tweak="/tmp/anykernel/system/tweak.prop";
-	## abort tweak if tweak.prop is not found or is empty
-	if [ -s $tweak ]; then
+        build="$SS"/build.prop;
+        chmod 0666 $build;
 
-		build="$SS"/build.prop;
-		chmod 0666 $build;
+        prop_check $tweak;
+        do_Prop_Patching=$?;
 
-		prop_check $tweak;
-		do_Prop_Patching=$?;
+        if [ "$do_Prop_Patching" == 1 ]; then
+            ui_print " ";
+            ui_print " Patching build.prop";
+            if [ ! -e $build.bak ]; then
+                cp "$SS"/build.prop "$SS"/build.prop.bak;
+                ui_print " build.prop backup saved in /system/build.prop.bak";
+            fi
+            ## read only lines matching valid entry pattern (someVAR=someVAL, !someSTR, @someENTR|someSTR, $someVAR=someVAL)
+            sed -r '/(^#|^ *$|^BACKUP=)/d;/(.*=.*|^\!|^\@.*\|.*|^\$.*\|.*)/!d' "$tweak" | while read line
+            do
+                ## remove entry
+                if echo "$line" | grep -q '^\!';
+                then
+                    entry=$(echo "${line#?}" | sed -e 's/[\/&]/\\&/g');
+                    ## remove from $build if present
+                    grep -q "$entry" "$build" && (sed "/$entry/d" -i "$build" && ui_print "..all lines containing \"$entry\" removed");
 
-		if [ "$do_Prop_Patching" == 1 ]; then
-			ui_print " ";
-			ui_print " Patching build.prop";
-			if [ ! -e $build.bak ]; then
-				cp "$SS"/build.prop "$SS"/build.prop.bak;
-				ui_print " build.prop backup saved in /system/build.prop.bak";
-			fi
-			## read only lines matching valid entry pattern (someVAR=someVAL, !someSTR, @someENTR|someSTR, $someVAR=someVAL)
-			sed -r '/(^#|^ *$|^BACKUP=)/d;/(.*=.*|^\!|^\@.*\|.*|^\$.*\|.*)/!d' "$tweak" | while read line
-			do
-				## remove entry
-				if echo "$line" | grep -q '^\!';
-				then
-					entry=$(echo "${line#?}" | sed -e 's/[\/&]/\\&/g');
-					## remove from $build if present
-					grep -q "$entry" "$build" && (sed "/$entry/d" -i "$build" && ui_print "..all lines containing \"$entry\" removed");
+                ## append string
+                elif echo "$line" | grep -q '^\@';
+                then
+                    entry=$(echo "${line#?}" | sed -e 's/[\/&]/\\&/g');
+                    var=$(echo "$entry" | cut -d\| -f1);
+                    app=$(echo "$entry" | cut -d\| -f2);
+                    ## append string to $var's value if present in $build
+                    grep -q "$var" "$build" && (sed "s/^$var=.*$/&$app/" -i "$build" && ui_print "..\"$app\" appended to value of \"$var\"");
 
-				## append string
-				elif echo "$line" | grep -q '^\@';
-				then
-					entry=$(echo "${line#?}" | sed -e 's/[\/&]/\\&/g');
-					var=$(echo "$entry" | cut -d\| -f1);
-					app=$(echo "$entry" | cut -d\| -f2);
-					## append string to $var's value if present in $build
-					grep -q "$var" "$build" && (sed "s/^$var=.*$/&$app/" -i "$build" && ui_print "..\"$app\" appended to value of \"$var\"");
+                ## change value only if entry exists
+                elif echo "$line" | grep -q '^\$';
+                then
+                    entry=$(echo "${line#?}" | sed -e 's/[\/&]/\\&/g');
+                    var=$(echo "$entry" | cut -d\| -f1);
+                    new=$(echo "$entry" | cut -d\| -f2);
+                    ## change $var's value iif $var present in $build
+                    grep -q "$var=" "$build" && (sed "s/^$var=.*$/$var=$new/" -i "$build" && ui_print "..value of \"$var\" changed to \"$new\"");
 
-				## change value only if entry exists
-				elif echo "$line" | grep -q '^\$';
-				then
-					entry=$(echo "${line#?}" | sed -e 's/[\/&]/\\&/g');
-					var=$(echo "$entry" | cut -d\| -f1);
-					new=$(echo "$entry" | cut -d\| -f2);
-					## change $var's value iif $var present in $build
-					grep -q "$var=" "$build" && (sed "s/^$var=.*$/$var=$new/" -i "$build" && ui_print "..value of \"$var\" changed to \"$new\"");
-
-				## add or override entry
-				else
-					var=$(echo "$line" | cut -d= -f1);
-					old=$(grep "$var" "$build" | cut -d= -f2);
-					new=$(echo "$line" | cut -d= -f2);
-					## if variable already present in $build
-					if grep -q "$var" "$build";
-					then
-						## override value in $build if different
-						grep -q $(grep "$var" "$tweak") "$build" || (sed "s/^$var=.*$/$line/" -i "$build" && ui_print "..value of \"$var\" overridden from \"$old\" to \"$new\"");
-					## else append entry to $build
-					else
-					echo "
+                ## add or override entry
+                else
+                    var=$(echo "$line" | cut -d= -f1);
+                    old=$(grep "$var" "$build" | cut -d= -f2);
+                    new=$(echo "$line" | cut -d= -f2);
+                    ## if variable already present in $build
+                    if grep -q "$var" "$build";
+                    then
+                        ## override value in $build if different
+                        grep -q $(grep "$var" "$tweak") "$build" || (sed "s/^$var=.*$/$line/" -i "$build" && ui_print "..value of \"$var\" overridden from \"$old\" to \"$new\"");
+                    ## else append entry to $build
+                    else
+                    echo "
 $line" >> "$build" && ui_print "..entry \"$line\" added";
-					fi;
-				fi;
-			done;
-			## trim empty and duplicate lines of $build
-			sed '/^ *$/d' -i "$build";
-		fi;## prop_check check end
+                    fi;
+                fi;
+            done;
+            ## trim empty and duplicate lines of $build
+            sed '/^ *$/d' -i "$build";
+        fi;## prop_check check end
 
-		chmod 0644 "$build";
-	fi;## tweak.prop check end
+        chmod 0644 "$build";
+    fi;## tweak.prop check end
 fi;## build prop editor end
 
 if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.cleanup)" == 1 ]; then
   rm -rf /tmp/anykernel;
 fi;
 
-umount /system;
-mount /data 2>/dev/null;
+umount /system_root 2>/dev/null;
+umount /system 2>/dev/null;
 ui_print " ";
 ui_print "Done!";
