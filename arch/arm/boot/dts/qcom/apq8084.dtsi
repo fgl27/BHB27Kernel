@@ -4856,7 +4856,7 @@
 		qcom,ibat-monitor {
 			high-threshold-uamp = <3000000>;
 			low-threshold-uamp = <1000000>;
-			mitigation-freq-khz = <1267000>;
+			mitigation-freq-khz = <1728000>;
 			mitigation-gpu-freq-khz = <389000>;
 			max-gpu-freq-khz = <600000>;
 			ibat-channel = <0x15>;
@@ -4864,8 +4864,8 @@
 			uv-to-ua-numerator = <2>;
 			uv-to-ua-denominator = <1>;
 			vph-channel = <0x07>;
-			vph-high-threshold-uv = <3700000>;
-			vph-low-threshold-uv = <3400000>;
+			vph-high-threshold-uv = <3650000>;
+			vph-low-threshold-uv = <3350000>;
 			thermal-handle = <&msm_thermal_freq>;
 			smb135x-handle = <&smb1357_otg_vreg>;
 		};
