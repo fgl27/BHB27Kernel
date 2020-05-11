@@ -5,7 +5,7 @@
 # file.md can work with more data or have more lines then a page wiki
 
 # input variables set the below the rest must be automatic
-kernel_tree="$HOME/android/apq8084/";
+kernel_tree="$(dirname ""$(dirname "$0")"")";
 kernel_name="BHB27KERNEL"
 # input variables end
 
