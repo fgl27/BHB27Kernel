@@ -5042,7 +5042,7 @@
 		qcom,ibat-monitor {
 			high-threshold-uamp = <3000000>;
 			low-threshold-uamp = <1000000>;
-			mitigation-freq-khz = <1728000>;
+			mitigation-freq-khz = <1958400>;
 			mitigation-gpu-freq-khz = <400000>;
 			max-gpu-freq-khz = <800000>;
 			ibat-channel = <0x15>;
