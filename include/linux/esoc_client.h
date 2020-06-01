@@ -15,6 +15,8 @@
 #include <linux/esoc_ctrl.h>
 #include <linux/notifier.h>
 
+struct device;
+
 /*
  * struct esoc_desc: Describes an external soc
  * @name: external soc name
