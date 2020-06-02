@@ -465,7 +465,7 @@ void send_asm_custom_topology(struct audio_client *ac)
 	}
 
 	q6asm_add_hdr_custom_topology(ac, &asm_top.hdr, sizeof(asm_top), TRUE);
-	atomic_set(&ac->mem_state, -1);
+	atomic_set(&ac->mem_state, 1);
 	asm_top.hdr.opcode = ASM_CMD_ADD_TOPOLOGIES;
 	asm_top.payload_addr_lsw = lower_32_bits(cal_block.cal_paddr);
 	asm_top.payload_addr_msw = upper_32_bits(cal_block.cal_paddr);
