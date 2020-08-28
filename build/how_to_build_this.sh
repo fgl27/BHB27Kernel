@@ -68,12 +68,11 @@
 # latest tools may need this https://forum.xda-developers.com/showpost.php?p=73219523&postcount=42
 #export CROSS_COMPILE=$HOME/android/n/prebuilts/gcc/linux-x86/arm/arm-eabi-4.8/bin/arm-eabi-
 #export CROSS_COMPILE=$HOME/android/temp/uber_arm-linux-androideabi-4.9/bin/arm-linux-androideabi-
-export CROSS_COMPILE=$HOME/android/temp/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-
+export CROSS_COMPILE=$HOME/android/q/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-
 #export CROSS_COMPILE=$HOME/android/temp/arm-eabi-4.9-ubertc/bin/arm-eabi-
 #export CROSS_COMPILE=$HOME/android/temp/arm-eabi-7.x-ubertc/bin/arm-eabi-
 #export CROSS_COMPILE=$HOME/android/temp/arm-eabi-8.x-ubertc/bin/arm-eabi-
 #export CROSS_COMPILE=$HOME/android/temp/arm-linaro-linux-gnueabi-7.x/bin/arm-linaro-linux-gnueabi-
-
 #kernel zip name
 ZIPNAME="BHB27-Kernel-Q_Pie-V9.47.zip";
 
