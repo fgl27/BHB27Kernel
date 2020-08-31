@@ -661,10 +661,10 @@ static ssize_t iavail_low_threshold_mode_store(struct device *dev,
 	if (!gbcl)
 		return -EPERM;
 
-	if (!strcmp(buf, "enable"))
+    	if (!strncmp(buf, "enable", 6))
 		gbcl->bcl_threshold_mode[BCL_LOW_THRESHOLD_TYPE]
 			= BCL_IAVAIL_THRESHOLD_ENABLED;
-	else if (!strcmp(buf, "disable"))
+	else if (!strncmp(buf, "disable", 7))
 		gbcl->bcl_threshold_mode[BCL_LOW_THRESHOLD_TYPE]
 			= BCL_IAVAIL_THRESHOLD_DISABLED;
 	else
@@ -690,10 +690,10 @@ static ssize_t iavail_high_threshold_mode_store(struct device *dev,
 	if (!gbcl)
 		return -EPERM;
 
-	if (!strcmp(buf, "enable"))
+    	if (!strncmp(buf, "enable", 6))
 		gbcl->bcl_threshold_mode[BCL_HIGH_THRESHOLD_TYPE]
 			= BCL_IAVAIL_THRESHOLD_ENABLED;
-	else if (!strcmp(buf, "disable"))
+	else if (!strncmp(buf, "disable", 7))
 		gbcl->bcl_threshold_mode[BCL_HIGH_THRESHOLD_TYPE]
 			= BCL_IAVAIL_THRESHOLD_DISABLED;
 	else
