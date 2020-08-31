@@ -285,6 +285,11 @@ static int bcl_cpufreq_callback(struct notifier_block *nfb,
 {
 	struct cpufreq_policy *policy = data;
 
+	if (gbcl->bcl_mode == BCL_DEVICE_DISABLED) {
+	    cpufreq_verify_within_limits(policy, 0, UINT_MAX);
+		return NOTIFY_OK;
+    }
+
 	switch (event) {
 	case CPUFREQ_INCOMPATIBLE:
 		if (bcl_vph_state == BCL_LOW_THRESHOLD) {
