@@ -572,8 +572,6 @@ show_bcl(vph_low, gbcl->btm_vph_low_thresh, "%d\n")
 show_bcl(freq_limit, gbcl->btm_freq_limit, "%u\n")
 show_bcl(vph_state, bcl_vph_state, "%d\n")
 show_bcl(ibat_state, bcl_ibat_state, "%d\n")
-show_bcl(hotplug_mask, bcl_hotplug_mask, "%d\n")
-show_bcl(hotplug_status, bcl_hotplug_request, "%d\n")
 
 static ssize_t
 mode_show(struct device *dev, struct device_attribute *attr, char *buf)
@@ -836,26 +834,6 @@ static ssize_t vph_high_store(struct device *dev,
 	return count;
 }
 
-static ssize_t hotplug_mask_store(struct device *dev,
-					struct device_attribute *attr,
-					const char *buf, size_t count)
-{
-	int val = 0;
-
-	if (!sscanf(buf, "%d", &val))
-		return -EINVAL;
-
-	if (bcl_hotplug_mask == val)
-		return count;
-
-	bcl_hotplug_mask = val;
-	pr_info("bcl hotplug mask updated to %d\n", bcl_hotplug_mask);
-
-	bcl_handle_hotplug();
-
-	return count;
-}
-
 /*
  * BCL device attributes
  */
@@ -894,8 +872,6 @@ static struct device_attribute btm_dev_attr[] = {
 	__ATTR(vph_high_thresh_uv, 0644, vph_high_show, vph_high_store),
 	__ATTR(vph_low_thresh_uv, 0644, vph_low_show, vph_low_store),
 	__ATTR(thermal_freq_limit, 0444, freq_limit_show, NULL),
-	__ATTR(hotplug_mask, 0644, hotplug_mask_show, hotplug_mask_store),
-	__ATTR(hotplug_status, 0444, hotplug_status_show, NULL),
 };
 
 static int create_bcl_sysfs(struct bcl_context *bcl)
