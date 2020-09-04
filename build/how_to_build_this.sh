@@ -130,23 +130,16 @@ if [ ! -d "./build/temp" ]; then
 fi
 
 # the log.txt here are the build logs to check if error stop the kernel build
-time make bhb27kernel_defconfig && time make -j$CORES 2>&1 | tee ./build/build_log.txt && ./build/dtbToolCM -2 -o ./build/temp/arch/arm/boot/dt.img -s 4096 -p ./build/temp/scripts/dtc/ ./build/temp/arch/arm/boot/dts/
-lz4 -9 ./build/temp/arch/arm/boot/dt.img
+time make bhb27kernel_defconfig && time make -j$CORES 2>&1 | tee ./build/build_log.txt
 
 # check if kernel build ok
-if [ ! -e ./build/temp/arch/arm/boot/zImage ]; then
+if [ ! -e ./build/temp/arch/arm/boot/zImage-dtb ]; then
 	echo -e "\nKernel Not build! Check build_log.txt\n"
 	grep -B 3 -C 6 -r error: build/build_log.txt
 	grep -B 3 -C 6 -r warn build/build_log.txt
 	exit 1;
-elif [ ! -e ./build/temp/arch/arm/boot/dt.img.lz4 ]; then
-	echo -e "\ndtb Not build! Check build_log.txt\n"
-	grep -B 3 -C 6 -r error: build/build_log.txt
-	grep -B 3 -C 6 -r warn build/build_log.txt
-	exit 1;
 else
-	cp -rf ./build/temp/arch/arm/boot/zImage ./build/bhbkernel/zImage
-	cp -rf ./build/temp/arch/arm/boot/dt.img.lz4 ./build/bhbkernel/dtb
+	cp -rf ./build/temp/arch/arm/boot/zImage-dtb ./build/bhbkernel/zImage-dtb
 	rm -rf ./build/*.zip
 
 	7za a -tzip -r ./build/build.zip ./build/bhbkernel/* '-x!README.md'  '-x!*.gitignore' > /dev/null
