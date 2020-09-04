@@ -120,7 +120,7 @@ ui_print "       Device: $device $sku SDK: $sdk         ";
 
 ui_print "-----------------------------------------------";
 ui_print "                                               ";
-ui_print "             Version - 9.49 - Q_Pie       ";
+ui_print "             Version - 9.50 - Q_Pie       ";
 ui_print "                 For LOS-Base                  ";
 ui_print "                                               ";
 ui_print "Check XDA Thread, for recommendations help, etc";
