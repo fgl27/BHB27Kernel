@@ -115,8 +115,8 @@ endif
 
 targets       := vmlinux vmlinux.lds \
 		 piggy.$(suffix_y) piggy.$(suffix_y).o \
-		 lib1funcs.o lib1funcs.S ashldi3.o ashldi3.S bswapsdi2.o \
-		 bswapsdi2.S font.o font.c head.o misc.o decompress.o $(OBJS)
+		 lib1funcs.o lib1funcs.S ashldi3.o ashldi3.S \
+		 font.o font.c head.o misc.o decompress.o $(OBJS)
 
 # Make sure files are removed during clean
 extra-y       += piggy.gzip piggy.lzo piggy.lzma piggy.xzkern piggy.lz4 \
