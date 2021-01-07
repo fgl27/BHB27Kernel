@@ -60,11 +60,7 @@ int udp_sock_create4(struct net *net, struct udp_port_cfg *cfg,
 			goto error;
 	}
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 16, 0)
-	sock->sk->sk_no_check = !cfg->use_udp_checksums;
-#else
 	sock->sk->sk_no_check_tx = !cfg->use_udp_checksums;
-#endif
 
 	*sockp = sock;
 	return 0;
@@ -88,48 +84,6 @@ void setup_udp_tunnel_sock(struct net *net, struct socket *sock,
 	 * backporting things stupidly. */
 	*(void **)&sock->sk->sk_data_ready = (void *)__compat_sk_data_ready;
 }
-
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 16, 0)
-static inline __sum16 udp_v4_check(int len, __be32 saddr,
-				   __be32 daddr, __wsum base)
-{
-	return csum_tcpudp_magic(saddr, daddr, len, IPPROTO_UDP, base);
-}
-
-static void udp_set_csum(bool nocheck, struct sk_buff *skb,
-		  __be32 saddr, __be32 daddr, int len)
-{
-	struct udphdr *uh = udp_hdr(skb);
-
-	if (nocheck)
-		uh->check = 0;
-	else if (skb_is_gso(skb))
-		uh->check = ~udp_v4_check(len, saddr, daddr, 0);
-	else if (skb_dst(skb) && skb_dst(skb)->dev &&
-		 (skb_dst(skb)->dev->features & NETIF_F_V4_CSUM)) {
-
-		BUG_ON(skb->ip_summed == CHECKSUM_PARTIAL);
-
-		skb->ip_summed = CHECKSUM_PARTIAL;
-		skb->csum_start = skb_transport_header(skb) - skb->head;
-		skb->csum_offset = offsetof(struct udphdr, check);
-		uh->check = ~udp_v4_check(len, saddr, daddr, 0);
-	} else {
-		__wsum csum;
-
-		BUG_ON(skb->ip_summed == CHECKSUM_PARTIAL);
-
-		uh->check = 0;
-		csum = skb_checksum(skb, 0, len, 0);
-		uh->check = udp_v4_check(len, saddr, daddr, csum);
-		if (uh->check == 0)
-			uh->check = CSUM_MANGLED_0;
-
-		skb->ip_summed = CHECKSUM_UNNECESSARY;
-	}
-}
-
-#endif
 
 static void __compat_fake_destructor(struct sk_buff *skb)
 {
@@ -288,12 +242,8 @@ int udp_sock_create6(struct net *net, struct udp_port_cfg *cfg,
 	if (err < 0)
 		goto error;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 16, 0)
-	sock->sk->sk_no_check = !cfg->use_udp_checksums;
-#else
 	udp_set_no_check6_tx(sock->sk, !cfg->use_udp6_tx_checksums);
 	udp_set_no_check6_rx(sock->sk, !cfg->use_udp6_rx_checksums);
-#endif
 
 	*sockp = sock;
 	return 0;
@@ -306,49 +256,6 @@ error:
 	*sockp = NULL;
 	return err;
 }
-
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 16, 0)
-static inline __sum16 udp_v6_check(int len,
-		const struct in6_addr *saddr,
-		const struct in6_addr *daddr,
-		__wsum base)
-{
-	return csum_ipv6_magic(saddr, daddr, len, IPPROTO_UDP, base);
-}
-static void udp6_set_csum(bool nocheck, struct sk_buff *skb,
-		   const struct in6_addr *saddr,
-		   const struct in6_addr *daddr, int len)
-{
-	struct udphdr *uh = udp_hdr(skb);
-
-	if (nocheck)
-		uh->check = 0;
-	else if (skb_is_gso(skb))
-		uh->check = ~udp_v6_check(len, saddr, daddr, 0);
-	else if (skb_dst(skb) && skb_dst(skb)->dev &&
-		 (skb_dst(skb)->dev->features & NETIF_F_IPV6_CSUM)) {
-
-		BUG_ON(skb->ip_summed == CHECKSUM_PARTIAL);
-
-		skb->ip_summed = CHECKSUM_PARTIAL;
-		skb->csum_start = skb_transport_header(skb) - skb->head;
-		skb->csum_offset = offsetof(struct udphdr, check);
-		uh->check = ~udp_v6_check(len, saddr, daddr, 0);
-	} else {
-		__wsum csum;
-
-		BUG_ON(skb->ip_summed == CHECKSUM_PARTIAL);
-
-		uh->check = 0;
-		csum = skb_checksum(skb, 0, len, 0);
-		uh->check = udp_v6_check(len, saddr, daddr, csum);
-		if (uh->check == 0)
-			uh->check = CSUM_MANGLED_0;
-
-		skb->ip_summed = CHECKSUM_UNNECESSARY;
-	}
-}
-#endif
 
 int udp_tunnel6_xmit_skb(struct dst_entry *dst, struct sock *sk,
 			 struct sk_buff *skb,
