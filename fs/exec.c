@@ -55,7 +55,6 @@
 #include <linux/pipe_fs_i.h>
 #include <linux/oom.h>
 #include <linux/compat.h>
-#include <linux/ksm.h>
 #include <linux/resource.h>
 
 #include <asm/uaccess.h>
@@ -1169,7 +1168,8 @@ void setup_new_exec(struct linux_binprm * bprm)
 	/* An exec changes our domain. We are no longer part of the thread
 	   group */
 	WRITE_ONCE(current->self_exec_id, current->self_exec_id + 1);
-	flush_signal_handlers(current, 0);
+
+	current->self_exec_id++;
 }
 EXPORT_SYMBOL(setup_new_exec);
 
@@ -1340,8 +1340,8 @@ static void bprm_fill_uid(struct linux_binprm *bprm)
 	}
 }
 
-/*
- * Fill the binprm structure from the inode.
+/* 
+ * Fill the binprm structure from the inode. 
  * Check permissions, then read the first 128 (BINPRM_BUF_SIZE) bytes
  *
  * This may be called multiple times for binary chains (scripts for example).
