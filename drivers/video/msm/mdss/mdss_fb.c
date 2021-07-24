@@ -56,8 +56,8 @@
 #include "mdss_mdp_splash_logo.h"
 #include "mdss_mdp.h"
 
-#ifdef CONFIG_FB_MSM_QUINTUPLE_BUFFER
-#define MDSS_FB_NUM 5
+#ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
+#define MDSS_FB_NUM 3
 #else
 #define MDSS_FB_NUM 2
 #endif
